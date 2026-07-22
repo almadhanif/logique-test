@@ -23,11 +23,13 @@ export function CarForm({
   carId,
   initialValues,
   existingAnalysis,
+  makes,
 }: {
   mode: "create" | "edit";
   carId?: string;
   initialValues?: InitialValues;
   existingAnalysis?: ExistingAnalysis;
+  makes: { name: string }[];
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -97,13 +99,25 @@ export function CarForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Make" required>
-          <input
+          <select
             required
             value={make}
             onChange={(e) => setMake(e.target.value)}
-            placeholder="e.g. Toyota"
-            className={inputClass}
-          />
+            className={`${inputClass} cursor-pointer`}
+          >
+            <option value="" disabled>
+              Select a manufacturer…
+            </option>
+            {makes.map((m) => (
+              <option key={m.name} value={m.name}>
+                {m.name}
+              </option>
+            ))}
+            {/* Keep the current make selectable even if it's not in the catalog. */}
+            {make && !makes.some((m) => m.name === make) ? (
+              <option value={make}>{make}</option>
+            ) : null}
+          </select>
         </Field>
         <Field label="Model" required>
           <input

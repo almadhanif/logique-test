@@ -52,12 +52,15 @@ export default async function EditCarPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const car = await prisma.car.findUnique({ where: { id } });
+  const [car, makes] = await Promise.all([
+    prisma.car.findUnique({ where: { id } }),
+    prisma.make.findMany({ orderBy: { name: "asc" }, select: { name: true } }),
+  ]);
 
   if (!car) notFound();
 
   return (
-    <div className="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="app-container py-10">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/admin/dashboard" },
@@ -71,6 +74,7 @@ export default async function EditCarPage({
         <CarForm
           mode="edit"
           carId={car.id}
+          makes={makes}
           existingAnalysis={buildExistingAnalysis(car)}
           initialValues={{
             make: car.make,

@@ -135,6 +135,26 @@ async function main() {
 
   // Wipe and reinsert so seeding is idempotent.
   await prisma.car.deleteMany();
+  await prisma.make.deleteMany();
+
+  // Seed the manufacturer catalog from the distinct makes used by the cars.
+  const makeNames = Array.from(new Set(cars.map((c) => c.make))).sort();
+  const countryByMake: Record<string, string> = {
+    Toyota: "Japan",
+    Honda: "Japan",
+    Suzuki: "Japan",
+    Mitsubishi: "Japan",
+    Nissan: "Japan",
+    Hyundai: "South Korea",
+    Daihatsu: "Japan",
+    Wuling: "China",
+  };
+  for (const name of makeNames) {
+    await prisma.make.create({
+      data: { name, country: countryByMake[name] ?? null },
+    });
+  }
+  console.log(`🚗 Seeded ${makeNames.length} makes.`);
 
   for (const car of cars) {
     await prisma.car.create({ data: car });

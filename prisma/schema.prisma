@@ -17,6 +17,17 @@ enum Status {
   SOLD
 }
 
+// Catalog of vehicle manufacturers (managed by admins). Car.make stores the
+// make name as a denormalized string; this table is the dynamic source of truth
+// for the make dropdown in the car form and the public filter.
+model Make {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  country   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Car {
   id          String   @id @default(cuid())
   make        String

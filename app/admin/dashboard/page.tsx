@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Factory } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { KanbanBoard } from "@/components/admin/KanbanBoard";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   const analyzed = cars.filter((c) => c.healthScore !== null).length;
 
   return (
-    <div className="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="app-container py-10">
       <Breadcrumbs
         items={[
           { label: "Admin", href: "/admin/dashboard" },
@@ -41,13 +41,22 @@ export default async function DashboardPage() {
             Published → Sold).
           </p>
         </div>
-        <Link
-          href="/admin/cars/new"
-          className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:opacity-90 hover:-translate-y-px"
-        >
-          <Plus className="h-4 w-4" strokeWidth={2.5} />
-          Add listing
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/makes"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary shadow-sm transition-all hover:opacity-90 hover:-translate-y-px"
+          >
+            <Factory className="h-4 w-4" strokeWidth={2.5} />
+            Manufacturers
+          </Link>
+          <Link
+            href="/admin/cars/new"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:opacity-90 hover:-translate-y-px"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+            Add listing
+          </Link>
+        </div>
       </div>
 
       <KanbanBoard initialCars={cars} />

@@ -1,11 +1,17 @@
 import { CarForm } from "@/components/admin/CarForm";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export default function NewCarPage() {
+export default async function NewCarPage() {
+  const makes = await prisma.make.findMany({
+    orderBy: { name: "asc" },
+    select: { name: true },
+  });
+
   return (
-    <div className="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="app-container py-10">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/admin/dashboard" },
@@ -16,7 +22,7 @@ export default function NewCarPage() {
         New listing
       </h1>
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
-        <CarForm mode="create" />
+        <CarForm mode="create" makes={makes} />
       </div>
     </div>
   );
