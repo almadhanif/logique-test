@@ -27,6 +27,12 @@ export function parseCarFilters(
     return Number.isFinite(n) ? n : undefined;
   };
 
+  // mileageMax keeps its raw parsed value (even Infinity/NaN when the user
+  // typed something absurd) so the query layer can detect an out-of-range
+  // input and return 0 results instead of silently dropping the filter.
+  const mileageRaw = (v: string | undefined) =>
+    v === undefined || v === "" ? undefined : Number(v);
+
   return {
     search: first(params.search)?.trim() || undefined,
     make: first(params.make) || undefined,
@@ -34,7 +40,7 @@ export function parseCarFilters(
     yearMax: num(first(params.yearMax)),
     priceMin: num(first(params.priceMin)),
     priceMax: num(first(params.priceMax)),
-    mileageMax: num(first(params.mileageMax)),
+    mileageMax: mileageRaw(first(params.mileageMax)),
   };
 }
 
@@ -63,7 +69,10 @@ export function buildPublishedWhere(
         ...(f.priceMax !== undefined && { lte: f.priceMax }),
       },
     }),
-    ...(f.mileageMax !== undefined && { mileage: { lte: f.mileageMax } }),
+    // Guard against non-finite values (overflow/NaN) so this never emits a
+    // broken `lte: Infinity` clause — the query layer short-circuits those.
+    ...(f.mileageMax !== undefined &&
+      Number.isFinite(f.mileageMax) && { mileage: { lte: f.mileageMax } }),
   };
 }
 
@@ -76,6 +85,22 @@ export async function fetchPublishedCarsPage(
   page = 1,
   pageSize: number = PAGE_SIZE,
 ) {
+  // Mileage guard: if the requested max is non-finite (overflow/absurd input)
+  // OR exceeds the highest mileage in the catalog, return no results. This
+  // keeps the filter predictable — previously overflow dropped the filter and
+  // returned every car, while precision-loss on huge ints returned 0
+  // inconsistently. Now any value above the catalog max consistently yields 0.
+  if (f.mileageMax !== undefined) {
+    const agg = await prisma.car.aggregate({
+      where: { status: "PUBLISHED" },
+      _max: { mileage: true },
+    });
+    const maxMileage = agg._max.mileage ?? 0;
+    if (!Number.isFinite(f.mileageMax) || f.mileageMax > maxMileage) {
+      return { cars: [], total: 0, hasMore: false };
+    }
+  }
+
   const where = buildPublishedWhere(f);
   const [cars, total] = await Promise.all([
     prisma.car.findMany({
