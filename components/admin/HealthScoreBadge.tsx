@@ -1,14 +1,10 @@
-// Small color-coded pill for a car's marketability health score.
-// Used on Kanban cards and inside the analyzer.
+import { Gauge } from "lucide-react";
 
-function band(score: number): { cls: string; label: string } {
-  if (score >= 71) {
-    return { cls: "bg-emerald-100 text-emerald-700 ring-emerald-200", label: "Good" };
-  }
-  if (score >= 41) {
-    return { cls: "bg-amber-100 text-amber-700 ring-amber-200", label: "Fair" };
-  }
-  return { cls: "bg-red-100 text-red-700 ring-red-200", label: "Weak" };
+// Block-style health score pill. 0-40 red, 41-70 amber, 71-100 green.
+function band(score: number): { cls: string } {
+  if (score >= 71) return { cls: "bg-trust-green/10 text-trust-green ring-trust-green/30" };
+  if (score >= 41) return { cls: "bg-amber-100 text-amber-700 ring-amber-300" };
+  return { cls: "bg-accent/10 text-accent ring-accent/30" };
 }
 
 export function HealthScoreBadge({ score }: { score: number | null | undefined }) {
@@ -16,7 +12,7 @@ export function HealthScoreBadge({ score }: { score: number | null | undefined }
     return (
       <span
         title="Not yet analyzed"
-        className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-400 ring-1 ring-inset ring-zinc-200"
+        className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-bold text-secondary ring-1 ring-inset ring-border"
       >
         –
       </span>
@@ -27,9 +23,9 @@ export function HealthScoreBadge({ score }: { score: number | null | undefined }
   return (
     <span
       title={`Health score ${score}/100`}
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset ${cls}`}
+      className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold ring-1 ring-inset ${cls}`}
     >
-      <span aria-hidden>✨</span>
+      <Gauge className="h-3 w-3" strokeWidth={2.5} />
       {score}
     </span>
   );

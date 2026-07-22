@@ -2,10 +2,11 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
+import { FilterX } from "lucide-react";
 import { buildSearchPath } from "@/lib/nav";
 
 const inputClass =
-  "w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink shadow-sm outline-none transition-colors placeholder:text-ink-faint focus:border-accent focus:ring-2 focus:ring-accent/20";
+  "w-full cursor-text rounded-lg border border-border bg-surface px-4 py-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-secondary focus:border-primary";
 
 export function FilterPanel({ makes }: { makes: string[] }) {
   const router = useRouter();
@@ -52,29 +53,30 @@ export function FilterPanel({ makes }: { makes: string[] }) {
     make || yearMin || yearMax || priceMin || priceMax || mileageMax;
 
   return (
-    <div className="space-y-4 rounded-2xl border border-line bg-surface p-5 shadow-sm">
+    <div className="space-y-5 rounded-xl border border-border bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-base font-semibold text-ink">Filters</h2>
+        <h2 className="label text-xs text-primary">Filters</h2>
         {hasFilters ? (
           <button
             type="button"
             onClick={reset}
-            className="text-xs font-medium text-accent hover:text-accent-hover"
+            className="inline-flex cursor-pointer items-center gap-1 text-xs font-bold uppercase tracking-wider text-accent transition-opacity hover:opacity-80"
           >
-            Clear all
+            <FilterX className="h-3.5 w-3.5" strokeWidth={2.5} />
+            Clear
           </button>
         ) : null}
       </div>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-medium text-ink-soft">Make</span>
+        <span className="label mb-1.5 block text-[10px] text-secondary">Make</span>
         <select
           value={make}
           onChange={(e) => {
             setMake(e.target.value);
             apply({ make: e.target.value });
           }}
-          className={inputClass}
+          className={`${inputClass} cursor-pointer`}
         >
           <option value="">All makes</option>
           {makes.map((m) => (
@@ -86,66 +88,30 @@ export function FilterPanel({ makes }: { makes: string[] }) {
       </label>
 
       <div>
-        <span className="mb-1 block text-xs font-medium text-ink-soft">Year</span>
+        <span className="label mb-1.5 block text-[10px] text-secondary">Year</span>
         <div className="flex items-center gap-2">
-          <NumberInput
-            ariaLabel="Minimum year"
-            placeholder="Min"
-            value={yearMin}
-            onChange={setYearMin}
-            onCommit={() => apply({ yearMin })}
-          />
-          <span className="text-ink-faint">–</span>
-          <NumberInput
-            ariaLabel="Maximum year"
-            placeholder="Max"
-            value={yearMax}
-            onChange={setYearMax}
-            onCommit={() => apply({ yearMax })}
-          />
+          <NumberInput ariaLabel="Minimum year" placeholder="Min" value={yearMin} onChange={setYearMin} onCommit={() => apply({ yearMin })} />
+          <span className="text-secondary">–</span>
+          <NumberInput ariaLabel="Maximum year" placeholder="Max" value={yearMax} onChange={setYearMax} onCommit={() => apply({ yearMax })} />
         </div>
       </div>
 
       <div>
-        <span className="mb-1 block text-xs font-medium text-ink-soft">
-          Price (IDR)
-        </span>
+        <span className="label mb-1.5 block text-[10px] text-secondary">Price (IDR)</span>
         <div className="flex items-center gap-2">
-          <NumberInput
-            ariaLabel="Minimum price"
-            placeholder="Min"
-            value={priceMin}
-            onChange={setPriceMin}
-            onCommit={() => apply({ priceMin })}
-          />
-          <span className="text-ink-faint">–</span>
-          <NumberInput
-            ariaLabel="Maximum price"
-            placeholder="Max"
-            value={priceMax}
-            onChange={setPriceMax}
-            onCommit={() => apply({ priceMax })}
-          />
+          <NumberInput ariaLabel="Minimum price" placeholder="Min" value={priceMin} onChange={setPriceMin} onCommit={() => apply({ priceMin })} />
+          <span className="text-secondary">–</span>
+          <NumberInput ariaLabel="Maximum price" placeholder="Max" value={priceMax} onChange={setPriceMax} onCommit={() => apply({ priceMax })} />
         </div>
       </div>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-medium text-ink-soft">
-          Max mileage (km)
-        </span>
-        <NumberInput
-          ariaLabel="Maximum mileage"
-          placeholder="e.g. 100000"
-          value={mileageMax}
-          onChange={setMileageMax}
-          onCommit={() => apply({ mileageMax })}
-        />
+        <span className="label mb-1.5 block text-[10px] text-secondary">Max mileage (km)</span>
+        <NumberInput ariaLabel="Maximum mileage" placeholder="e.g. 100000" value={mileageMax} onChange={setMileageMax} onCommit={() => apply({ mileageMax })} />
       </label>
 
       {isPending ? (
-        <p className="text-xs text-ink-faint" aria-live="polite">
-          Updating…
-        </p>
+        <p className="text-xs text-secondary" aria-live="polite">Updating…</p>
       ) : null}
     </div>
   );

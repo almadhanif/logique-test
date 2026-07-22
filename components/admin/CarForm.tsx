@@ -169,7 +169,7 @@ export function CarForm({
       </Field>
 
       {/* AI feature — embedded below the description field */}
-      <div className="rounded-2xl border border-line bg-paper/60 p-4">
+      <div className="rounded-2xl border border-border bg-background/60 p-4">
         <ListingAnalyzer
           carId={mode === "edit" ? carId : undefined}
           formData={aiFormValues}
@@ -187,17 +187,17 @@ export function CarForm({
         />
       </Field>
 
-      <div className="flex items-center justify-end gap-3 border-t border-line pt-5">
+      <div className="flex items-center justify-end gap-3 border-t border-border pt-5">
         <Link
           href="/admin/dashboard"
-          className="rounded-xl border border-line px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-paper-deep hover:text-ink"
+          className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-secondary transition-colors hover:bg-muted hover:text-primary"
         >
           Cancel
         </Link>
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-xl bg-accent px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-50"
+          className="cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:opacity-90 hover:-translate-y-px disabled:opacity-50"
         >
           {submitting ? "Saving…" : mode === "edit" ? "Save changes" : "Create draft"}
         </button>
@@ -207,7 +207,7 @@ export function CarForm({
 }
 
 const inputClass =
-  "w-full rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink shadow-sm outline-none transition-colors placeholder:text-ink-faint focus:border-accent focus:ring-2 focus:ring-accent/20";
+  "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-primary shadow-sm outline-none transition-colors placeholder:text-secondary focus:border-accent focus:ring-2 focus:ring-accent/20";
 
 function Field({
   label,
@@ -222,12 +222,12 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-ink-soft">
+      <span className="mb-1 block text-sm font-medium text-secondary">
         {label}
         {required ? <span className="text-accent"> *</span> : null}
       </span>
       {children}
-      {hint ? <span className="mt-1 block text-xs text-ink-faint">{hint}</span> : null}
+      {hint ? <span className="mt-1 block text-xs text-secondary">{hint}</span> : null}
     </label>
   );
 }

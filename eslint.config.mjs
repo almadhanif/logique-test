@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Skill tooling + design-system spec (not app source).
+    ".claude/**",
+    "design-system/**",
   ]),
 ]);
 

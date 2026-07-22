@@ -29,35 +29,35 @@ export function KanbanCard({
       style={style}
       {...listeners}
       {...attributes}
-      className={`group cursor-grab touch-none select-none rounded-xl border border-line bg-surface p-3 shadow-sm transition-all active:cursor-grabbing ${
-        isDragging ? "opacity-40" : "hover:-translate-y-0.5 hover:border-line-strong hover:shadow-md"
+      className={`group cursor-grab touch-none select-none rounded-xl border border-border bg-surface p-3 shadow-sm transition-all active:cursor-grabbing ${
+        isDragging ? "opacity-40" : "hover:-translate-y-0.5 hover:border-border hover:shadow-md"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate font-display text-base font-semibold text-ink">
+          <p className="truncate font-display text-base font-semibold text-primary">
             {car.make} {car.model}
           </p>
-          <p className="text-xs text-ink-faint">
+          <p className="text-xs text-secondary">
             {car.year} · {formatMileage(car.mileage)}
           </p>
         </div>
         <HealthScoreBadge score={car.healthScore} />
       </div>
 
-      <p className="mt-2 font-display text-lg font-semibold text-ink">
+      <p className="mt-2 font-display text-lg font-semibold text-primary">
         {formatPrice(car.price)}
       </p>
 
       {/* Action row — stop pointerdown so clicks don't start a drag */}
       <div
-        className="mt-2 flex items-center gap-1 border-t border-line pt-2"
+        className="mt-2 flex items-center gap-1 border-t border-border pt-2"
         onPointerDown={(e) => e.stopPropagation()}
       >
         <button
           type="button"
           onClick={() => onEdit(car.id)}
-          className="rounded-md px-2 py-1 text-xs font-medium text-ink-soft transition-colors hover:bg-paper-deep hover:text-ink"
+          className="rounded-md px-2 py-1 text-xs font-medium text-secondary transition-colors hover:bg-muted hover:text-primary"
         >
           Edit
         </button>
@@ -65,7 +65,7 @@ export function KanbanCard({
           <button
             type="button"
             onClick={() => onDelete(car.id)}
-            className="rounded-md px-2 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent-soft"
+            className="rounded-md px-2 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent/10"
           >
             Delete
           </button>

@@ -24,8 +24,8 @@ export function useToast(): PushFn {
 
 const STYLES: Record<ToastType, string> = {
   success: "bg-emerald-600",
-  error: "bg-red-600",
-  info: "bg-zinc-800",
+  error: "bg-accent",
+  info: "bg-primary",
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {

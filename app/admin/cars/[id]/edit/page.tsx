@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { CarForm } from "@/components/admin/CarForm";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import type { ExistingAnalysis } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -13,11 +13,18 @@ function buildExistingAnalysis(car: {
   analysisSuggestions: string | null;
   lastAnalyzedAt: Date | null;
 }): ExistingAnalysis | undefined {
+  // The analysis fields are nullable. Treat the analysis as present only when
+  // every required field has a value — a partially-populated row (e.g. an
+  // analysis that was interrupted) is ignored so the UI re-analyzes.
+  //
+  // NOTE: compare with `!= null` (not `=== null`): the Prisma v7 driver adapter
+  // serializes SQL NULL columns as `undefined`, not `null`, so a strict check
+  // would let undefined values through and crash on `.toISOString()` below.
   if (
-    car.healthScore === null ||
-    car.suggestedPriceMin === null ||
-    car.suggestedPriceMax === null ||
-    car.lastAnalyzedAt === null
+    car.healthScore == null ||
+    car.suggestedPriceMin == null ||
+    car.suggestedPriceMax == null ||
+    car.lastAnalyzedAt == null
   ) {
     return undefined;
   }
@@ -50,17 +57,17 @@ export default async function EditCarPage({
   if (!car) notFound();
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-      <Link
-        href="/admin/dashboard"
-        className="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-accent"
-      >
-        ← Back to listings
-      </Link>
-      <h1 className="mb-6 font-display text-3xl font-semibold tracking-tight text-ink">
+    <div className="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
+      <Breadcrumbs
+        items={[
+          { label: "Dashboard", href: "/admin/dashboard" },
+          { label: "Edit listing" },
+        ]}
+      />
+      <h1 className="mb-6 mt-5 font-display text-3xl font-semibold tracking-tight text-primary">
         Edit listing
       </h1>
-      <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm sm:p-8">
+      <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
         <CarForm
           mode="edit"
           carId={car.id}

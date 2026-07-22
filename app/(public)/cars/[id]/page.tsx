@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Car, Gauge, Calendar, Palette, Clock, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { formatMileage, formatNumber, formatPrice } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,6 @@ export default async function CarDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-
   const car = await prisma.car.findUnique({ where: { id } });
 
   // Only published cars are publicly viewable; everything else 404s.
@@ -20,49 +20,44 @@ export default async function CarDetailPage({
     notFound();
   }
 
-  const monogram = (car.make[0] ?? "L").toUpperCase();
-
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <Link
-        href="/"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-accent"
-      >
-        ← Back to listings
-      </Link>
+    <div className="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
+      <Breadcrumbs
+        items={[
+          { label: "Browse", href: "/" },
+          { label: `${car.make} ${car.model}` },
+        ]}
+      />
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.15fr_1fr]">
-        {/* Photo placeholder */}
-        <div className="reveal flex aspect-[4/3] items-center justify-center overflow-hidden rounded-3xl border border-line bg-gradient-to-br from-paper-deep via-paper-deep to-accent-soft">
-          <span className="font-display text-[12rem] leading-none text-accent/25">
-            {monogram}
-          </span>
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1.1fr_1fr]">
+        {/* Placeholder block */}
+        <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl bg-primary">
+          <div className="block-grid absolute inset-0 opacity-60" aria-hidden />
+          <Car className="relative h-28 w-28 text-on-primary/90" strokeWidth={1.25} />
         </div>
 
         {/* Summary */}
-        <div className="reveal reveal-2 flex flex-col">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-3">
             <StatusBadge status={car.status} />
-            <span className="text-sm text-ink-faint">{car.year}</span>
+            <span className="label text-[10px] text-secondary">{car.year}</span>
           </div>
-          <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+          <h1 className="mt-3 font-display text-4xl font-bold uppercase leading-[0.95] text-primary sm:text-5xl">
             {car.make} {car.model}
           </h1>
 
-          <div className="mt-5">
-            <p className="text-xs font-medium uppercase tracking-wider text-ink-faint">
-              Price
-            </p>
-            <p className="font-display text-4xl font-semibold text-ink">
+          <div className="mt-6 rounded-xl border border-border bg-surface p-6 shadow-sm">
+            <p className="label text-[10px] text-secondary">Price</p>
+            <p className="mt-1 font-display text-4xl font-bold text-primary">
               {formatPrice(car.price)}
             </p>
           </div>
 
-          <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-line pt-6">
-            <Spec label="Mileage" value={formatMileage(car.mileage)} />
-            <Spec label="Year" value={formatNumber(car.year)} />
-            <Spec label="Color" value={car.color ?? "—"} />
-            <Spec label="Listed" value={car.createdAt.toLocaleDateString()} />
+          <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border">
+            <Spec icon={<Gauge className="h-4 w-4" />} label="Mileage" value={formatMileage(car.mileage)} />
+            <Spec icon={<Calendar className="h-4 w-4" />} label="Year" value={formatNumber(car.year)} />
+            <Spec icon={<Palette className="h-4 w-4" />} label="Color" value={car.color ?? "—"} />
+            <Spec icon={<Clock className="h-4 w-4" />} label="Listed" value={car.createdAt.toLocaleDateString()} />
           </dl>
         </div>
       </div>
@@ -70,28 +65,25 @@ export default async function CarDetailPage({
       {/* Description / AI ad copy */}
       <div className="mt-12">
         {car.adCopy ? (
-          <section className="relative overflow-hidden rounded-3xl border border-accent/20 bg-accent-soft/40 p-8 sm:p-10">
-            <span className="font-display text-6xl leading-none text-accent/30">
-              &ldquo;
-            </span>
-            <p className="-mt-4 whitespace-pre-line font-display text-xl leading-relaxed text-ink sm:text-2xl">
+          <section className="relative overflow-hidden rounded-xl border border-accent/30 bg-accent/5 p-8 sm:p-10">
+            <Sparkles className="absolute right-6 top-6 h-6 w-6 text-accent/40" strokeWidth={2} />
+            <p className="label text-[10px] text-accent">{"// AI listing copy"}</p>
+            <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-foreground sm:text-xl">
               {car.adCopy}
             </p>
           </section>
         ) : (
-          <section className="rounded-3xl border border-line bg-surface p-8 sm:p-10">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
-              Description
-            </h2>
+          <section className="rounded-xl border border-border bg-surface p-8 shadow-sm sm:p-10">
+            <h2 className="label text-[10px] text-secondary">Description</h2>
             {car.description ? (
-              <p className="mt-3 whitespace-pre-line text-lg leading-relaxed text-ink-soft">
+              <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-foreground">
                 {car.description}
               </p>
             ) : (
-              <p className="mt-3 text-ink-faint">No description provided.</p>
+              <p className="mt-4 text-secondary">No description provided.</p>
             )}
-            <p className="mt-4 text-xs italic text-ink-faint">
-              Not yet enhanced — an admin can generate AI ad copy for this listing.
+            <p className="mt-4 text-xs italic text-secondary">
+              Not yet AI-enhanced — an admin can generate polished ad copy.
             </p>
           </section>
         )}
@@ -100,13 +92,22 @@ export default async function CarDetailPage({
   );
 }
 
-function Spec({ label, value }: { label: string; value: string }) {
+function Spec({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
   return (
-    <div>
-      <dt className="text-[11px] font-medium uppercase tracking-wider text-ink-faint">
-        {label}
-      </dt>
-      <dd className="mt-1 font-display text-lg font-medium text-ink">{value}</dd>
+    <div className="bg-surface p-4">
+      <div className="flex items-center gap-2 text-secondary">
+        {icon}
+        <dt className="label text-[10px]">{label}</dt>
+      </div>
+      <dd className="mt-1 font-display text-base font-bold text-primary">{value}</dd>
     </div>
   );
 }

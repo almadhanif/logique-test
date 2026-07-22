@@ -1,38 +1,48 @@
 @import "tailwindcss";
 
 /*
-  Logique Motors — editorial automotive design system.
-  Warm paper, ink type, a single ember accent. Distinctive type pairing
-  (Fraunces display + Manrope UI) to avoid generic "AI" aesthetics.
+  AutoListing design system (design-system/autolisting/MASTER.md).
+  Premium dark (#1E293B) + action red (#DC2626). "Vibrant & Block-based".
+  Type: Syncopate (wide/tech display) + Space Mono (kinetic mono body).
 */
 
 @theme {
-  /* Surfaces */
-  --color-paper: #f5f1e8;
-  --color-paper-deep: #ece5d5;
-  --color-surface: #fffdf7;
+  /* Color tokens — from MASTER.md */
+  --color-primary: #1e293b;
+  --color-on-primary: #ffffff;
+  --color-secondary: #334155;
+  --color-accent: #dc2626; /* CTA + destructive */
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+  --color-muted: #e9edf1;
+  --color-border: #e2e8f0;
+  --color-ring: #1e293b;
+  --color-surface: #ffffff; /* card surface */
 
-  /* Ink (warm near-black + grays) */
-  --color-ink: #1c1814;
-  --color-ink-soft: #5b5249;
-  --color-ink-faint: #8c8276;
-
-  /* Lines */
-  --color-line: #e4dccc;
-  --color-line-strong: #d3c9b4;
-
-  /* Accent — ember */
-  --color-accent: #c8471f;
-  --color-accent-hover: #a83a16;
-  --color-accent-soft: #f1e0d4;
-  --color-accent-ink: #7a2a12;
+  /* Trust signals use blue/green (per public.md strategy) */
+  --color-trust-blue: #2563eb;
+  --color-trust-green: #16a34a;
 
   /* Typography */
-  --font-sans:
-    var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    sans-serif;
-  --font-display:
-    var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-syncopate), "Arial Narrow", sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, "SFMono-Regular", monospace;
+  /* Body defaults to Space Mono (design system: kinetic mono body) */
+  --font-sans: var(--font-space-mono), ui-monospace, monospace;
+
+  /* Shadows — from MASTER.md */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+
+  /* Spacing scale (explicit for reference; Tailwind defaults already match) */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
 }
 
 @layer base {
@@ -42,40 +52,30 @@
   }
 
   body {
-    background-color: var(--color-paper);
-    color: var(--color-ink);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     font-family: var(--font-sans);
-    /* Subtle warm gradient + paper feel */
-    background-image:
-      radial-gradient(
-        1200px 600px at 85% -10%,
-        rgba(200, 71, 31, 0.06),
-        transparent 60%
-      ),
-      radial-gradient(
-        900px 500px at -10% 10%,
-        rgba(28, 24, 20, 0.04),
-        transparent 55%
-      );
-    background-attachment: fixed;
   }
 
-  /* Fine paper grain overlay */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.4;
-    mix-blend-mode: multiply;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  /* All clickable elements get a pointer (MASTER a11y checklist). */
+  a,
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  select,
+  summary {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
   }
 
-  /* Keep all real content above the grain layer */
-  body > * {
-    position: relative;
-    z-index: 1;
+  /* Headings use Syncopate (wide, uppercase, tracked). */
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
   }
 
   ::selection {
@@ -83,29 +83,58 @@
     color: #fff;
   }
 
+  /* Visible focus for a11y (MASTER checklist). */
   :focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ring) 35%, transparent);
+    border-radius: 6px;
   }
 }
 
 @layer utilities {
-  /* Staggered reveal-on-load */
-  .reveal {
-    opacity: 0;
-    transform: translateY(14px);
-    animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* Block-based geometric texture (used in hero / dark sections).
+     Static — motion is gated behind prefers-reduced-motion. */
+  .block-grid {
+    background-image:
+      linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.06) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.06) 1px,
+        transparent 1px
+      );
+    background-size: 28px 28px;
   }
 
-  .reveal-1 { animation-delay: 0.04s; }
-  .reveal-2 { animation-delay: 0.10s; }
-  .reveal-3 { animation-delay: 0.16s; }
-  .reveal-4 { animation-delay: 0.22s; }
-  .reveal-5 { animation-delay: 0.28s; }
-  .reveal-6 { animation-delay: 0.34s; }
+  .block-grid-dark {
+    background-image:
+      linear-gradient(
+        to right,
+        rgba(15, 23, 42, 0.05) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(15, 23, 42, 0.05) 1px,
+        transparent 1px
+      );
+    background-size: 28px 28px;
+  }
 
-  .text-balance {
-    text-wrap: balance;
+  /* Staggered reveal on load. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: reveal-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .label {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
   }
 }
 
@@ -123,6 +152,7 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
   .reveal {
     opacity: 1;

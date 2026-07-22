@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Lock } from "lucide-react";
 
 export function LoginForm({ from }: { from?: string }) {
   const router = useRouter();
@@ -32,21 +33,23 @@ export function LoginForm({ from }: { from?: string }) {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-20">
       <div className="mb-8 text-center">
-        <span className="font-display text-5xl text-accent">🔐</span>
-        <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-ink">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-accent text-white shadow-md">
+          <Lock className="h-6 w-6" strokeWidth={2.5} />
+        </span>
+        <h1 className="mt-5 font-display text-3xl font-bold uppercase tracking-wide text-primary">
           Admin sign in
         </h1>
-        <p className="mt-2 text-sm text-ink-soft">
+        <p className="mt-2 text-sm text-secondary">
           Manage listings, the pipeline, and AI insights.
         </p>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="w-full space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-sm"
+        className="w-full space-y-4 rounded-2xl border border-border bg-surface p-6 shadow-sm"
       >
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-ink-soft">
+          <span className="mb-1.5 block text-sm font-medium text-secondary">
             Password
           </span>
           <input
@@ -57,7 +60,7 @@ export function LoginForm({ from }: { from?: string }) {
             autoFocus
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-faint focus:border-accent focus:ring-2 focus:ring-accent/20"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-primary outline-none transition-colors placeholder:text-secondary focus:border-accent focus:ring-2 focus:ring-accent/20"
           />
         </label>
 
@@ -70,14 +73,14 @@ export function LoginForm({ from }: { from?: string }) {
         <button
           type="submit"
           disabled={loading || !password}
-          className="w-full rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-50"
+          className="w-full cursor-pointer rounded-xl bg-accent px-4 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:opacity-90 hover:-translate-y-px disabled:opacity-50"
         >
           {loading ? "Signing in…" : "Sign in"}
         </button>
 
-        <p className="text-center text-xs text-ink-faint">
-          Demo password is set via <code className="text-ink-soft">ADMIN_PASSWORD</code>{" "}
-          (default: <code className="text-ink-soft">admin123</code>).
+        <p className="text-center text-xs text-secondary">
+          Demo password is set via <code className="text-secondary">ADMIN_PASSWORD</code>{" "}
+          (default: <code className="text-secondary">admin123</code>).
         </p>
       </form>
     </div>

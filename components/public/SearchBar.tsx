@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
+import { Search } from "lucide-react";
 import { buildSearchPath } from "@/lib/nav";
 
 export function SearchBar() {
@@ -20,27 +21,26 @@ export function SearchBar() {
   return (
     <form onSubmit={submit} className="flex w-full items-center gap-2" role="search">
       <div className="relative flex-1">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-            <path d="m20 20-3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </span>
+        <Search
+          className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary"
+          strokeWidth={2.5}
+        />
         <input
           type="search"
           name="search"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="Search make or model…"
-          className="w-full rounded-xl border border-line bg-surface py-2.5 pl-9 pr-3 text-sm text-ink shadow-sm outline-none transition-colors placeholder:text-ink-faint focus:border-accent focus:ring-2 focus:ring-accent/20"
+          className="w-full cursor-text rounded-lg border border-border bg-surface py-3 pl-11 pr-4 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-secondary focus:border-primary"
         />
       </div>
       <button
         type="submit"
         disabled={isPending}
-        className="shrink-0 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-50"
+        className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:opacity-90 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Search
+        <Search className="h-4 w-4" strokeWidth={2.5} />
+        <span className="hidden sm:inline">Search</span>
       </button>
     </form>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Lightbulb, Sparkles } from "lucide-react";
 import type {
   AICopyFormValues,
   AnalysisBreakdown,
@@ -112,10 +113,10 @@ export function ListingAnalyzer({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="text-sm font-semibold text-ink">
+          <h3 className="text-sm font-semibold text-primary">
             AI listing analyzer
           </h3>
-          <p className="text-xs text-ink-soft">
+          <p className="text-xs text-secondary">
             One call returns a marketability score, a suggested price range, and
             improvement tips.
           </p>
@@ -124,7 +125,7 @@ export function ListingAnalyzer({
           type="button"
           onClick={analyze}
           disabled={loading || !canAnalyze}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:opacity-90 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -132,15 +133,21 @@ export function ListingAnalyzer({
               Analyzing…
             </>
           ) : view ? (
-            "✨ Re-analyze"
+            <>
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={2.5} />
+              Re-analyze
+            </>
           ) : (
-            "✨ Analyze listing"
+            <>
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={2.5} />
+              Analyze listing
+            </>
           )}
         </button>
       </div>
 
       {!canAnalyze ? (
-        <p className="mt-2 text-xs text-ink-faint">
+        <p className="mt-2 text-xs text-secondary">
           Fill in make, model, year, mileage and price to enable analysis.
         </p>
       ) : null}
@@ -174,20 +181,20 @@ function Results({
     <div className="mt-4 space-y-4">
       {/* Score + price */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="rounded-lg border border-line bg-surface p-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">
+        <div className="rounded-lg border border-border bg-surface p-3">
+          <p className="text-xs font-medium uppercase tracking-wide text-secondary">
             Marketability score
           </p>
           <div className="mt-1 flex items-baseline gap-1">
-            <span className="font-display text-4xl font-bold text-ink">
+            <span className="font-display text-4xl font-bold text-primary">
               {view.healthScore}
             </span>
-            <span className="text-sm text-ink-faint">/ 100</span>
+            <span className="text-sm text-secondary">/ 100</span>
             <span className={`ml-2 text-xs font-semibold ${color.text}`}>
               {color.label}
             </span>
           </div>
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-paper-deep">
+          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
               className={`h-full rounded-full transition-[width] duration-700 ease-out ${color.bar}`}
               style={{ width: `${view.healthScore}%` }}
@@ -195,29 +202,29 @@ function Results({
           </div>
         </div>
 
-        <div className="rounded-lg border border-line bg-surface p-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">
+        <div className="rounded-lg border border-border bg-surface p-3">
+          <p className="text-xs font-medium uppercase tracking-wide text-secondary">
             Suggested price
           </p>
           {view.priceMin !== undefined && view.priceMax !== undefined ? (
             <>
-              <p className="mt-1 text-lg font-bold text-ink">
+              <p className="mt-1 text-lg font-bold text-primary">
                 {formatPrice(view.priceMin)} – {formatPrice(view.priceMax)}
               </p>
-              <p className="mt-1 text-xs italic text-ink-soft">
+              <p className="mt-1 text-xs italic text-secondary">
                 {view.rationale ?? "Based on make, model, year and mileage."}
               </p>
             </>
           ) : (
-            <p className="mt-1 text-sm text-ink-faint">Re-analyze for details.</p>
+            <p className="mt-1 text-sm text-secondary">Re-analyze for details.</p>
           )}
         </div>
       </div>
 
       {/* Breakdown bars (only available from a fresh analysis) */}
       {view.breakdown ? (
-        <div className="rounded-lg border border-line bg-surface p-3">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-soft">
+        <div className="rounded-lg border border-border bg-surface p-3">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-secondary">
             Score breakdown
           </p>
           <div className="space-y-2">
@@ -240,11 +247,12 @@ function Results({
 
       {/* Suggestions */}
       {view.suggestions.length > 0 ? (
-        <div className="rounded-lg border border-line bg-surface p-3">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-soft">
-            💡 Suggestions to improve
+        <div className="rounded-lg border border-border bg-surface p-3">
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-secondary">
+            <Lightbulb className="h-3.5 w-3.5 text-accent" strokeWidth={2.5} />
+            Suggestions to improve
           </p>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-ink-soft">
+          <ul className="list-disc space-y-1 pl-5 text-sm text-secondary">
             {view.suggestions.map((s, i) => (
               <li key={i}>{s}</li>
             ))}
@@ -253,7 +261,7 @@ function Results({
       ) : null}
 
       <div className="flex items-center justify-between">
-        <p className="text-xs text-ink-faint">
+        <p className="text-xs text-secondary">
           {view.lastAnalyzedAt
             ? `Last analyzed ${timeAgo(view.lastAnalyzedAt)}`
             : ""}
@@ -261,7 +269,7 @@ function Results({
         <button
           type="button"
           onClick={onReanalyze}
-          className="text-xs font-medium text-ink-soft hover:text-ink"
+          className="text-xs font-medium text-secondary hover:text-primary"
         >
           Re-analyze
         </button>
@@ -282,23 +290,23 @@ function BreakdownRow({
   return (
     <div>
       <div className="flex items-center justify-between text-xs">
-        <span className="font-medium text-ink-soft">
+        <span className="font-medium text-secondary">
           {label}{" "}
-          <span className="text-ink-faint">
+          <span className="text-secondary">
             · {part.label}
           </span>
         </span>
-        <span className="tabular-nums text-ink-soft">{part.score}/25</span>
+        <span className="tabular-nums text-secondary">{part.score}/25</span>
       </div>
       <div className="mt-1 flex items-center gap-2">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-paper-deep">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
           <div
             className={`h-full rounded-full transition-[width] duration-700 ease-out ${color.bar}`}
             style={{ width: `${pct}%` }}
           />
         </div>
       </div>
-      <p className="mt-0.5 text-xs text-ink-faint">{part.note}</p>
+      <p className="mt-0.5 text-xs text-secondary">{part.note}</p>
     </div>
   );
 }
@@ -306,17 +314,17 @@ function BreakdownRow({
 function Skeleton() {
   return (
     <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <div className="animate-pulse rounded-lg border border-line bg-surface p-3">
+      <div className="animate-pulse rounded-lg border border-border bg-surface p-3">
         <div className="h-3 w-24 rounded bg-line" />
         <div className="mt-2 h-7 w-20 rounded bg-line" />
-        <div className="mt-2 h-2 w-full rounded bg-paper-deep" />
+        <div className="mt-2 h-2 w-full rounded bg-muted" />
       </div>
-      <div className="animate-pulse rounded-lg border border-line bg-surface p-3">
+      <div className="animate-pulse rounded-lg border border-border bg-surface p-3">
         <div className="h-3 w-24 rounded bg-line" />
         <div className="mt-2 h-6 w-40 rounded bg-line" />
-        <div className="mt-2 h-3 w-32 rounded bg-paper-deep" />
+        <div className="mt-2 h-3 w-32 rounded bg-muted" />
       </div>
-      <p className="text-center text-xs text-ink-faint sm:col-span-2">
+      <p className="text-center text-xs text-secondary sm:col-span-2">
         Analyzing market data…
       </p>
     </div>

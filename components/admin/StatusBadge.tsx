@@ -1,9 +1,9 @@
 import type { Status } from "@/lib/generated/prisma/client";
 
 const STYLES: Record<Status, string> = {
-  DRAFT: "bg-stone-200/70 text-stone-700 ring-stone-300",
-  PUBLISHED: "bg-emerald-100 text-emerald-800 ring-emerald-200",
-  SOLD: "bg-sky-100 text-sky-800 ring-sky-200",
+  DRAFT: "bg-muted text-secondary ring-border",
+  PUBLISHED: "bg-trust-green/10 text-trust-green ring-trust-green/30",
+  SOLD: "bg-trust-blue/10 text-trust-blue ring-trust-blue/30",
 };
 
 const LABELS: Record<Status, string> = {
@@ -15,7 +15,7 @@ const LABELS: Record<Status, string> = {
 export function StatusBadge({ status }: { status: Status }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ring-1 ring-inset ${STYLES[status]}`}
+      className={`inline-flex shrink-0 items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ring-1 ring-inset ${STYLES[status]}`}
     >
       {LABELS[status]}
     </span>
