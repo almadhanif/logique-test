@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { formatMileage, formatNumber, formatPrice } from "@/lib/format";
+import { getLocale } from "@/lib/i18n/server";
+import { t } from "@/lib/i18n/dictionaries";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +15,10 @@ export default async function CarDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const car = await prisma.car.findUnique({ where: { id } });
+  const [car, locale] = await Promise.all([
+    prisma.car.findUnique({ where: { id } }),
+    getLocale(),
+  ]);
 
   // Only published cars are publicly viewable; everything else 404s.
   if (!car || car.status !== "PUBLISHED") {
@@ -21,10 +26,10 @@ export default async function CarDetailPage({
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="app-container py-10">
       <Breadcrumbs
         items={[
-          { label: "Browse", href: "/" },
+          { label: t(locale, "nav.browse"), href: "/" },
           { label: `${car.make} ${car.model}` },
         ]}
       />
@@ -47,17 +52,17 @@ export default async function CarDetailPage({
           </h1>
 
           <div className="mt-6 rounded-xl border border-border bg-surface p-6 shadow-sm">
-            <p className="label text-[10px] text-secondary">Price</p>
+            <p className="label text-[10px] text-secondary">{t(locale, "detail.price")}</p>
             <p className="mt-1 font-display text-4xl font-bold text-primary">
               {formatPrice(car.price)}
             </p>
           </div>
 
           <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border">
-            <Spec icon={<Gauge className="h-4 w-4" />} label="Mileage" value={formatMileage(car.mileage)} />
-            <Spec icon={<Calendar className="h-4 w-4" />} label="Year" value={formatNumber(car.year)} />
-            <Spec icon={<Palette className="h-4 w-4" />} label="Color" value={car.color ?? "—"} />
-            <Spec icon={<Clock className="h-4 w-4" />} label="Listed" value={car.createdAt.toLocaleDateString()} />
+            <Spec icon={<Gauge className="h-4 w-4" />} label={t(locale, "detail.mileage")} value={formatMileage(car.mileage)} />
+            <Spec icon={<Calendar className="h-4 w-4" />} label={t(locale, "detail.year")} value={formatNumber(car.year)} />
+            <Spec icon={<Palette className="h-4 w-4" />} label={t(locale, "detail.color")} value={car.color ?? "—"} />
+            <Spec icon={<Clock className="h-4 w-4" />} label={t(locale, "detail.listed")} value={car.createdAt.toLocaleDateString()} />
           </dl>
         </div>
       </div>
@@ -67,23 +72,23 @@ export default async function CarDetailPage({
         {car.adCopy ? (
           <section className="relative overflow-hidden rounded-xl border border-accent/30 bg-accent/5 p-8 sm:p-10">
             <Sparkles className="absolute right-6 top-6 h-6 w-6 text-accent/40" strokeWidth={2} />
-            <p className="label text-[10px] text-accent">{"// AI listing copy"}</p>
+            <p className="label text-[10px] text-accent">{t(locale, "detail.aiCopy")}</p>
             <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-foreground sm:text-xl">
               {car.adCopy}
             </p>
           </section>
         ) : (
           <section className="rounded-xl border border-border bg-surface p-8 shadow-sm sm:p-10">
-            <h2 className="label text-[10px] text-secondary">Description</h2>
+            <h2 className="label text-[10px] text-secondary">{t(locale, "detail.description")}</h2>
             {car.description ? (
               <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-foreground">
                 {car.description}
               </p>
             ) : (
-              <p className="mt-4 text-secondary">No description provided.</p>
+              <p className="mt-4 text-secondary">{t(locale, "detail.noDescription")}</p>
             )}
             <p className="mt-4 text-xs italic text-secondary">
-              Not yet AI-enhanced — an admin can generate polished ad copy.
+              {t(locale, "detail.notEnhanced")}
             </p>
           </section>
         )}

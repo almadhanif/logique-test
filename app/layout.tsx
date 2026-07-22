@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Space_Mono, Syncopate } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
+import { getLocale } from "@/lib/i18n/server";
+import { t } from "@/lib/i18n/dictionaries";
 
 // AutoListing type system: Syncopate (wide/tech display) + Space Mono (body).
 // Self-hosted via next/font — no runtime CDN, works inside Docker.
@@ -48,12 +50,13 @@ export default function RootLayout({
   );
 }
 
-function SiteFooter() {
+async function SiteFooter() {
+  const locale = await getLocale();
   return (
     <footer className="border-t border-border bg-primary text-on-primary">
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col items-start justify-between gap-2 px-4 py-8 text-xs sm:flex-row sm:items-center sm:px-6 lg:px-8">
+      <div className="app-container flex flex-col items-start justify-between gap-2 py-8 text-xs sm:flex-row sm:items-center">
         <p className="label opacity-80">© {new Date().getFullYear()} AutoListing</p>
-        <p className="label text-accent">Drive the future</p>
+        <p className="label text-accent">{t(locale, "footer.tagline")}</p>
       </div>
     </footer>
   );

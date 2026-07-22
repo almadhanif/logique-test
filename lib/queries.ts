@@ -67,12 +67,26 @@ export function buildPublishedWhere(
   };
 }
 
-/** Fetch published cars matching the given filters, newest first. */
-export async function fetchPublishedCars(f: CarListFilters) {
-  return prisma.car.findMany({
-    where: buildPublishedWhere(f),
-    orderBy: { createdAt: "desc" },
-  });
+/** Page size for the public browse grid (infinite scroll). */
+export const PAGE_SIZE = 8;
+
+/** Fetch one page of published cars matching the filters, newest first. */
+export async function fetchPublishedCarsPage(
+  f: CarListFilters,
+  page = 1,
+  pageSize: number = PAGE_SIZE,
+) {
+  const where = buildPublishedWhere(f);
+  const [cars, total] = await Promise.all([
+    prisma.car.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+    }),
+    prisma.car.count({ where }),
+  ]);
+  return { cars, total, hasMore: page * pageSize < total };
 }
 
 /** Distinct list of makes among published cars (for the filter dropdown). */
