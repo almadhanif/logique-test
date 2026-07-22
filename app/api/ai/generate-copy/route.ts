@@ -1,24 +1,19 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { isAuthenticated } from "@/lib/auth";
-import {
-  AD_COPY_MODEL,
-  getAnthropic,
-  isAnthropicConfigured,
-} from "@/lib/anthropic";
+import { aiChat, isAiConfigured } from "@/lib/ai";
 import { formatPrice } from "@/lib/format";
 
 // POST /api/ai/generate-copy — admin only.
-// Turns raw admin notes into polished, buyer-facing ad copy using Claude.
+// Turns raw admin notes into polished, buyer-facing ad copy via OpenRouter.
 export async function POST(request: Request) {
   if (!(await isAuthenticated())) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!isAnthropicConfigured()) {
+  if (!isAiConfigured()) {
     return Response.json(
       {
         error:
-          "AI feature is not configured. Set ANTHROPIC_API_KEY in .env.local and restart the server.",
+          "AI feature is not configured. Set OPENROUTER_API_KEY in .env and restart the server.",
       },
       { status: 503 },
     );
@@ -69,17 +64,7 @@ Admin notes: ${description || "None"}
 Write only the ad copy, no preamble or labels.`;
 
   try {
-    const client = getAnthropic();
-    const message = await client.messages.create({
-      model: AD_COPY_MODEL,
-      max_tokens: 1024,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const adCopy = message.content
-      .map((block) => (block.type === "text" ? block.text : ""))
-      .join("")
-      .trim();
+    const adCopy = await aiChat({ user: prompt, maxTokens: 1024 });
 
     if (!adCopy) {
       return Response.json(
@@ -90,12 +75,7 @@ Write only the ad copy, no preamble or labels.`;
 
     return Response.json({ adCopy });
   } catch (error) {
-    const message =
-      error instanceof Anthropic.APIError
-        ? `${error.name}: ${error.message}`
-        : error instanceof Error
-          ? error.message
-          : "Unknown error";
+    const message = error instanceof Error ? error.message : "Unknown error";
 
     return Response.json(
       { error: `AI service error: ${message}` },

@@ -1,10 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { isAuthenticated } from "@/lib/auth";
-import {
-  AD_COPY_MODEL,
-  getAnthropic,
-  isAnthropicConfigured,
-} from "@/lib/anthropic";
+import { aiChat, isAiConfigured } from "@/lib/ai";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/format";
 import type { ListingAnalysis } from "@/lib/types";
@@ -55,20 +50,14 @@ Scoring guide:
 - Appeal: consider year × mileage combination and brand reputation`;
 }
 
-// Ask Claude for the analysis JSON. Throws on empty/completely-unparseable text.
+// Ask the model (via OpenRouter) for the analysis JSON. Throws on
+// empty/completely-unparseable text.
 async function requestAnalysisJson(userPrompt: string): Promise<ListingAnalysis> {
-  const client = getAnthropic();
-  const message = await client.messages.create({
-    model: AD_COPY_MODEL,
-    max_tokens: 2048,
+  const raw = await aiChat({
     system: SYSTEM,
-    messages: [{ role: "user", content: userPrompt }],
+    user: userPrompt,
+    maxTokens: 2048,
   });
-
-  const raw = message.content
-    .map((block) => (block.type === "text" ? block.text : ""))
-    .join("")
-    .trim();
 
   // Strip markdown fences if the model added them anyway.
   const cleaned = raw
@@ -135,11 +124,11 @@ export async function POST(request: Request) {
     description,
   });
 
-  if (!isAnthropicConfigured()) {
+  if (!isAiConfigured()) {
     return Response.json(
       {
         error:
-          "AI feature is not configured. Set ANTHROPIC_API_KEY in .env.local and restart the server.",
+          "AI feature is not configured. Set OPENROUTER_API_KEY in .env and restart the server.",
       },
       { status: 503 },
     );
@@ -155,12 +144,7 @@ export async function POST(request: Request) {
       analysis = await requestAnalysisJson(stricter);
     }
   } catch (error) {
-    const message =
-      error instanceof Anthropic.APIError
-        ? error.message
-        : error instanceof Error
-          ? error.message
-          : "Unknown error";
+    const message = error instanceof Error ? error.message : "Unknown error";
     console.error("[analyze-listing] failed:", message);
     return Response.json(
       { error: "Analysis unavailable, please try again" },
