@@ -6,31 +6,37 @@ export type Crumb = {
   href?: string;
 };
 
-// Lightweight breadcrumb nav. The last item is rendered as plain text
-// (the current page); earlier items with an `href` are links.
+// Breadcrumb nav, given more visual weight: a bordered bar with bold,
+// high-contrast labels and accent chevrons. The last item is the current page
+// (rendered as plain text in the accent color).
 export function Breadcrumbs({ items }: { items: Crumb[] }) {
   return (
     <nav
       aria-label="Breadcrumb"
-      className="flex flex-wrap items-center gap-1.5 text-xs"
+      className="inline-flex flex-wrap items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 shadow-sm"
     >
       {items.map((item, i) => {
         const last = i === items.length - 1;
         return (
-          <span key={i} className="flex items-center gap-1.5">
+          <span key={i} className="flex items-center gap-2">
             {item.href && !last ? (
               <Link
                 href={item.href}
-                className="label text-secondary transition-colors hover:text-accent"
+                className="label cursor-pointer text-sm font-bold text-primary transition-colors hover:text-accent"
               >
                 {item.label}
               </Link>
             ) : (
-              <span className="label text-primary">{item.label}</span>
+              <span
+                className="label text-sm font-bold text-accent"
+                aria-current="page"
+              >
+                {item.label}
+              </span>
             )}
             {!last ? (
               <ChevronRight
-                className="h-3 w-3 text-border"
+                className="h-4 w-4 text-accent/70"
                 strokeWidth={2.5}
                 aria-hidden
               />
