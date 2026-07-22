@@ -1,0 +1,48 @@
+# Logique Motors — production stack with HTTPS (Caddy terminates TLS).
+#
+# Quick start:
+#   cp .env.example .env        # then fill in ANTHROPIC_API_KEY + ADMIN_PASSWORD
+#   docker compose up -d --build
+#
+#   → https://localhost         (or https://<your-server-ip>)
+#
+# Secrets (ANTHROPIC_API_KEY, ADMIN_PASSWORD) are read from the `.env` file that
+# docker compose auto-loads; DATABASE_URL is fixed to the persisted volume.
+
+services:
+  app:
+    build: .
+    image: logique-motors:latest
+    container_name: logique-motors
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      # SQLite file on a persisted named volume (survives restarts/redeploys).
+      DATABASE_URL: "file:/app/data/dev.db"
+      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL:-https://localhost}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin123}"
+    volumes:
+      - db-data:/app/data
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: logique-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:

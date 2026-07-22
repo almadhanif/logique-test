@@ -1,0 +1,28 @@
+# Logique Motors — HTTPS reverse proxy (Caddy).
+#
+# DEFAULT (works on any server/IP, no domain needed): self-signed TLS.
+#   Open https://<server-ip> — the browser shows a certificate warning because
+#   the cert is self-signed. That's expected; the connection IS encrypted (https).
+#
+# REAL DOMAIN (automatic Let's Encrypt certificates, no warning):
+#   1. Point your domain's DNS A record at this server.
+#   2. Change the site address below from `:443` to your domain, e.g.  `example.com`.
+#   3. Delete the `tls internal` line — Caddy will auto-provision a real cert.
+#   4. Optionally set `email` in the global block for ACME notifications.
+
+:443 {
+	tls internal
+	encode gzip zstd
+
+	reverse_proxy app:3000 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+# Redirect plain HTTP -> HTTPS.
+:80 {
+	redir https://{host}{uri} permanent
+}

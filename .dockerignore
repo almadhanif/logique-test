@@ -1,0 +1,30 @@
+# Build artifacts & caches
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Dependencies (installed inside the image)
+node_modules/
+
+# Local database & generated client (created inside the image)
+dev.db
+dev.db-journal
+*.db
+*.db-journal
+lib/generated/
+
+# Env files (secrets — passed via compose env_file, never baked into the image)
+.env
+.env.*
+!.env.example
+
+# Git & misc
+.git/
+.gitignore
+.DS_Store
+npm-debug.log*
+.DS_Store
+
+# Docker files themselves don't need copying but harmless; explicitly ignore logs
+*.log
