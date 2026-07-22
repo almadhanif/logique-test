@@ -35,7 +35,7 @@ export function KanbanCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate font-display text-base font-semibold text-primary">
+          <p className="line-clamp-2 break-words font-display text-base font-semibold text-primary">
             {car.make} {car.model}
           </p>
           <p className="text-xs text-secondary">

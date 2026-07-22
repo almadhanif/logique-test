@@ -2,15 +2,17 @@ import { prisma } from "@/lib/prisma";
 import { isAuthenticated } from "@/lib/auth";
 import type { Status } from "@/lib/generated/prisma/client";
 
-// Enforced lifecycle transitions: DRAFT -> PUBLISHED -> SOLD (no skipping).
-const NEXT_STATUS: Record<Status, Status | null> = {
-  DRAFT: "PUBLISHED",
-  PUBLISHED: "SOLD",
-  SOLD: null,
-};
+// Admins can move a listing freely between any pipeline status — no enforced
+// one-way lifecycle. (Previously only DRAFT -> PUBLISHED -> SOLD was allowed,
+// which blocked corrections like moving a car back to DRAFT.)
+const VALID_STATUSES: ReadonlySet<Status> = new Set([
+  "DRAFT",
+  "PUBLISHED",
+  "SOLD",
+]);
 
-// PATCH /api/cars/[id]/status — admin only. Advances a car's lifecycle.
-// Body: { status: "PUBLISHED" | "SOLD" }
+// PATCH /api/cars/[id]/status — admin only. Sets a car's pipeline status.
+// Body: { status: "DRAFT" | "PUBLISHED" | "SOLD" }
 export async function PATCH(
   request: Request,
   ctx: RouteContext<"/api/cars/[id]/status">,
@@ -28,9 +30,9 @@ export async function PATCH(
   }
 
   const requested = body.status;
-  if (requested !== "PUBLISHED" && requested !== "SOLD") {
+  if (!requested || !VALID_STATUSES.has(requested as Status)) {
     return Response.json(
-      { error: "status must be PUBLISHED or SOLD" },
+      { error: "status must be DRAFT, PUBLISHED, or SOLD" },
       { status: 422 },
     );
   }
@@ -38,19 +40,14 @@ export async function PATCH(
   const car = await prisma.car.findUnique({ where: { id }, select: { status: true } });
   if (!car) return Response.json({ error: "Not found" }, { status: 404 });
 
-  const allowed = NEXT_STATUS[car.status];
-  if (allowed !== requested) {
-    return Response.json(
-      {
-        error: `Invalid transition: ${car.status} -> ${requested}. Allowed: ${car.status} -> ${allowed ?? "(terminal)"}.`,
-      },
-      { status: 409 },
-    );
+  // No-op if the status is unchanged.
+  if (car.status === requested) {
+    return Response.json({ car });
   }
 
   const updated = await prisma.car.update({
     where: { id },
-    data: { status: requested },
+    data: { status: requested as Status },
   });
   return Response.json({ car: updated });
 }

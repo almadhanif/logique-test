@@ -18,12 +18,6 @@ import { useToast } from "@/components/ui/Toast";
 
 const COLUMNS: Status[] = ["DRAFT", "PUBLISHED", "SOLD"];
 
-// Valid drag transitions (source → target). Everything else is blocked.
-const VALID_TRANSITIONS: Record<string, boolean> = {
-  "DRAFT→PUBLISHED": true,
-  "PUBLISHED→SOLD": true,
-};
-
 export function KanbanBoard({ initialCars }: { initialCars: Car[] }) {
   const router = useRouter();
   const toast = useToast();
@@ -65,14 +59,7 @@ export function KanbanBoard({ initialCars }: { initialCars: Car[] }) {
     // Same column — nothing to do.
     if (currentStatus === newStatus) return;
 
-    // Client-side transition guard (UX only; the API enforces it too).
-    const key = `${currentStatus}→${newStatus}`;
-    if (!VALID_TRANSITIONS[key]) {
-      toast(`Cannot move from ${currentStatus} to ${newStatus}`, "error");
-      return;
-    }
-
-    // Optimistic update.
+    // Optimistic update. Any status -> any status is allowed.
     setCars((prev) =>
       prev.map((c) => (c.id === carId ? { ...c, status: newStatus } : c)),
     );
