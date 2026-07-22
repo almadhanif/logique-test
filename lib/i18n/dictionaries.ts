@@ -27,7 +27,7 @@ const en = {
   "browse.filtersActive": "{count} filters active",
   "browse.filterActive": "1 filter active",
   "browse.noMatches": "No matches",
-  "browse.noMatchesHint": "Adjust your filters to see more cars.",
+  "browse.noMatchesHint": "No cars found in the system",
   "browse.loadingMore": "Loading more…",
   "browse.end": "You've seen all {count} listings",
 
@@ -54,7 +54,8 @@ const en = {
   "detail.aiCopy": "// AI listing copy",
   "detail.description": "Description",
   "detail.noDescription": "No description provided.",
-  "detail.notEnhanced": "Not yet AI-enhanced — an admin can generate polished ad copy.",
+  "detail.notEnhanced":
+    "Not yet AI-enhanced — an admin can generate polished ad copy.",
 
   "footer.tagline": "Drive the future",
 };
@@ -76,7 +77,7 @@ const id: Record<keyof typeof en, string> = {
   "browse.filtersActive": "{count} filter aktif",
   "browse.filterActive": "1 filter aktif",
   "browse.noMatches": "Tidak ada hasil",
-  "browse.noMatchesHint": "Ubah filter Anda untuk melihat lebih banyak mobil.",
+  "browse.noMatchesHint": "Tidak ditemukan data mobil dari sistem",
   "browse.loadingMore": "Memuat lagi…",
   "browse.end": "Anda telah melihat semua {count} daftar",
 
@@ -103,7 +104,8 @@ const id: Record<keyof typeof en, string> = {
   "detail.aiCopy": "// deskripsi AI",
   "detail.description": "Deskripsi",
   "detail.noDescription": "Tidak ada deskripsi.",
-  "detail.notEnhanced": "Belum dipoles AI — admin bisa membuat deskripsi menarik.",
+  "detail.notEnhanced":
+    "Belum dipoles AI — admin bisa membuat deskripsi menarik.",
 
   "footer.tagline": "Berkendar masa depan",
 };

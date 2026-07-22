@@ -3,7 +3,12 @@ import { CarFront } from "lucide-react";
 import { CarList } from "@/components/public/CarList";
 import { SearchBar } from "@/components/public/SearchBar";
 import { FilterPanel } from "@/components/public/FilterPanel";
-import { fetchPublishedCarsPage, fetchPublishedMakes, PAGE_SIZE, parseCarFilters } from "@/lib/queries";
+import {
+  fetchPublishedCarsPage,
+  fetchPublishedMakes,
+  PAGE_SIZE,
+  parseCarFilters,
+} from "@/lib/queries";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n/dictionaries";
 
@@ -40,7 +45,7 @@ export default async function BrowsePage({
             <br />
             {t(locale, "hero.title2")}
           </h1>
-          <p className="reveal mt-5 max-w-xl text-sm leading-relaxed text-on-primary/80 sm:text-base">
+          <p className="reveal mt-5 text-sm leading-relaxed text-on-primary/80 sm:text-base">
             {t(locale, "hero.subtitle", { count: total })}
           </p>
 
@@ -76,7 +81,9 @@ export default async function BrowsePage({
                 <span className="text-xs text-accent">
                   {t(
                     locale,
-                    activeFilterCount === 1 ? "browse.filterActive" : "browse.filtersActive",
+                    activeFilterCount === 1
+                      ? "browse.filterActive"
+                      : "browse.filtersActive",
                     { count: activeFilterCount },
                   )}
                 </span>
