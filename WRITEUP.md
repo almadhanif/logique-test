@@ -187,3 +187,34 @@ redeploys.
 > Docker daemon was unavailable); the `Dockerfile` follows standard Next.js +
 > Prisma patterns and `docker compose config` validates, but the first real
 > build happens on the server.
+
+---
+
+## Public AI Features: Deal Intelligence + Inspection Checklist
+
+**Where AI is applied:** Public car detail page — the highest-intent touchpoint
+in the buyer journey. Buyers on the detail page are already interested; AI helps
+them decide.
+
+**Why one API call for two features:** The deal verdict and the inspection
+checklist are generated in the same prompt because they share context. The AI
+needs to know the car's condition and market position to write relevant checklist
+items — a Camry at 80.000 km gets different inspection priorities than a Fortuner
+at 30.000 km. Splitting them into two calls would be slower and more expensive
+for the same result.
+
+**Why Bahasa Indonesia for the public side, English for admin:**
+Admin users are internal operators comfortable with English UI conventions.
+Buyers are general Indonesian consumers — AI output in formal English would
+create friction and reduce trust. The language choice reflects the audience.
+
+**The caching decision:** Buyer insights are cached in the DB (`buyerInsight`
+JSON column) after first generation. This means the second (and every subsequent)
+visitor to the same listing sees instant results. The data doesn't expire — car
+details don't change after publishing. With more time, a "regenerate" option in
+the admin panel would handle post-publication edits.
+
+**What I'd add with more time:**
+- Regenerate trigger on the admin side when listing is edited post-publication.
+- Integrate with a live price API (OLX Autos, CarGurus) for real comparables.
+- "Share Checklist" button that generates a WhatsApp-shareable text.

@@ -184,3 +184,20 @@
     transform: none;
   }
 }
+
+/* Print: show only the inspection checklist (.print-target). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-target,
+  .print-target * {
+    visibility: visible;
+  }
+  .print-target {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}

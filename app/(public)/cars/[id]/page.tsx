@@ -3,9 +3,11 @@ import { Car, Gauge, Calendar, Palette, Clock, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { BuyerInsightsPanel } from "@/components/public/BuyerInsightsPanel";
 import { formatMileage, formatNumber, formatPrice } from "@/lib/format";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n/dictionaries";
+import type { BuyerInsight } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,16 @@ export default async function CarDetailPage({
   // Only published cars are publicly viewable; everything else 404s.
   if (!car || car.status !== "PUBLISHED") {
     notFound();
+  }
+
+  // Parse cached buyer insight if it exists (instant for repeat visitors).
+  let cachedInsight: BuyerInsight | null = null;
+  if (car.buyerInsight) {
+    try {
+      cachedInsight = JSON.parse(car.buyerInsight) as BuyerInsight;
+    } catch {
+      cachedInsight = null;
+    }
   }
 
   return (
@@ -92,6 +104,17 @@ export default async function CarDetailPage({
             </p>
           </section>
         )}
+      </div>
+
+      {/* Buyer AI insights — deal verdict + inspection checklist */}
+      <div className="mt-12">
+        <BuyerInsightsPanel
+          carId={car.id}
+          make={car.make}
+          model={car.model}
+          year={car.year}
+          cachedInsight={cachedInsight}
+        />
       </div>
     </div>
   );

@@ -48,6 +48,10 @@ model Car {
   analysisSuggestions String?   // JSON array of suggestions, stored as a string
   lastAnalyzedAt      DateTime? // when the last AI analysis was run
 
+  // Buyer-facing AI insights (cached after first generation)
+  buyerInsight   String?   // JSON blob — BuyerInsight
+  buyerInsightAt DateTime? // when buyer insight was generated
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
