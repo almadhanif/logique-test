@@ -1,13 +1,13 @@
 # Logique Motors — production stack with HTTPS (Caddy terminates TLS).
 #
 # Quick start:
-#   cp .env.example .env        # then fill in ANTHROPIC_API_KEY + ADMIN_PASSWORD
+#   cp .env.example .env        # then fill in OPENROUTER_API_KEY + ADMIN_PASSWORD
 #   docker compose up -d --build
 #
-#   → https://localhost         (or https://<your-server-ip>)
+#   → https://<your-domain>     (Caddy auto-provisions a Let's Encrypt cert)
 #
-# Secrets (ANTHROPIC_API_KEY, ADMIN_PASSWORD) are read from the `.env` file that
-# docker compose auto-loads; DATABASE_URL is fixed to the persisted volume.
+# Secrets (OPENROUTER_API_KEY, ADMIN_PASSWORD) are read from the `.env` file
+# that docker compose auto-loads; DATABASE_URL is fixed to the persisted volume.
 
 services:
   app:
@@ -21,7 +21,9 @@ services:
       # SQLite file on a persisted named volume (survives restarts/redeploys).
       DATABASE_URL: "file:/app/data/dev.db"
       NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL:-https://localhost}"
-      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY:-}"
+      # Optional: override the OpenRouter model (defaults to openai/gpt-4o-mini).
+      OPENROUTER_MODEL: "${OPENROUTER_MODEL:-}"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin123}"
     volumes:
       - db-data:/app/data
