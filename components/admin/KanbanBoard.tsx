@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Search, X } from "lucide-react";
 import {
   DndContext,
   DragOverlay,
@@ -23,10 +24,21 @@ export function KanbanBoard({ initialCars }: { initialCars: Car[] }) {
   const toast = useToast();
   const [cars, setCars] = useState<Car[]>(initialCars);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
+
+  // Filter cards by search query (make, model, year — case-insensitive).
+  const filteredCars = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return cars;
+    return cars.filter((c) => {
+      const hay = `${c.make} ${c.model} ${c.year}`.toLowerCase();
+      return q.split(/\s+/).every((word) => hay.includes(word));
+    });
+  }, [cars, search]);
 
   const byStatus = useMemo(() => {
     const groups: Record<Status, Car[]> = {
@@ -34,9 +46,9 @@ export function KanbanBoard({ initialCars }: { initialCars: Car[] }) {
       PUBLISHED: [],
       SOLD: [],
     };
-    for (const car of cars) groups[car.status].push(car);
+    for (const car of filteredCars) groups[car.status].push(car);
     return groups;
-  }, [cars]);
+  }, [filteredCars]);
 
   const activeCar = activeId ? cars.find((c) => c.id === activeId) ?? null : null;
 
@@ -127,6 +139,31 @@ export function KanbanBoard({ initialCars }: { initialCars: Car[] }) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
+      {/* Search bar */}
+      <div className="relative mb-5">
+        <Search
+          className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary"
+          strokeWidth={2.5}
+        />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search make, model, or year…"
+          className="h-11 w-full cursor-text rounded-lg border border-border bg-surface py-2.5 pl-10 pr-10 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-secondary focus:border-primary"
+        />
+        {search ? (
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+            aria-label="Clear search"
+            className="absolute right-3 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-secondary transition-colors hover:bg-muted hover:text-primary"
+          >
+            <X className="h-4 w-4" strokeWidth={2.5} />
+          </button>
+        ) : null}
+      </div>
+
       <div className="flex flex-col gap-4 lg:flex-row">
         {COLUMNS.map((status) => (
           <KanbanColumn
