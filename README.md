@@ -21,8 +21,12 @@ OpenRouter (AI) · `@dnd-kit` (drag-and-drop).
   managed `Make` table, not a hardcoded list.
 - **Bilingual EN/ID** — toggle in the header; the choice is stored in a cookie so
   server-rendered pages honor it.
-- **First-visit promo modal** — shows once per browser, rotates between promos.
-- **AI-enhanced listing pages** — polished ad copy and a marketability breakdown.
+- **First-visit promo modal** — shows once per browser, rotates between promos,
+  showcases a featured listing.
+- **AI-enhanced listing pages** — polished ad copy, marketability breakdown, and
+  **buyer-facing AI insights**: a deal verdict (great/good/fair/overpriced),
+  price assessment, negotiation tip, and a 5-item inspection checklist — all in
+  Bahasa Indonesia, cached after first generation.
 
 **Admin panel**
 - **Kanban board** with drag-and-drop status moves (free transitions between any
@@ -31,7 +35,9 @@ OpenRouter (AI) · `@dnd-kit` (drag-and-drop).
   the car form's make field is a dynamic dropdown sourced from this catalog.
 - **AI Listing Analyzer** — one call returns a 0–100 health score, a suggested
   price range, a 4-dimension breakdown, and improvement tips; persisted on the
-  car and shown as a badge on the Kanban card.
+  car and shown as a badge on the Kanban card. After analysis, click **Apply AI
+  suggestions** to auto-fill the form (price, model, color, ad copy, description)
+  with the AI's recommended values.
 - **AI Ad-copy generator** — turns raw admin notes into polished buyer-facing copy.
 - Cookie-based auth, toast feedback, breadcrumbs.
 
@@ -67,8 +73,13 @@ npm run dev
 | Makes  | http://localhost:3000/admin/makes | Manage the manufacturer catalog.       |
 
 **Admin flow:** create a listing (Draft) → fill notes → **✨ Analyze listing** for
-a score + price range → save → drag the card across the board. Status moves are
-free (Draft / Published / Sold in any direction); only Drafts can be deleted.
+a score + price range → **Apply AI suggestions** to auto-fill the form → save →
+drag the card across the board. Status moves are free (Draft / Published / Sold
+in any direction); only Drafts can be deleted.
+
+**Buyer experience:** visitors browse with infinite scroll + filters, see AI ad
+copy on the detail page, and can click **Analisis Sekarang** to get a deal verdict
++ printable inspection checklist (in Bahasa Indonesia).
 
 ---
 
@@ -79,7 +90,7 @@ All via environment variables (see [`.env.example`](./.env.example)):
 | Variable              | Required | Description                                                        |
 | --------------------- | -------- | ------------------------------------------------------------------ |
 | `DATABASE_URL`        | yes      | SQLite path, e.g. `file:./dev.db` (Docker uses a persisted volume).|
-| `OPENROUTER_API_KEY`  | for AI   | OpenRouter key — needed for the analyzer + ad-copy features.       |
+| `OPENROUTER_API_KEY`  | for AI   | OpenRouter key — powers the analyzer, ad-copy, and buyer-insights features. |
 | `OPENROUTER_MODEL`    | no       | Override the model (defaults to `openai/gpt-4o-mini`).             |
 | `ADMIN_PASSWORD`      | yes      | Password for the cookie-based admin auth.                          |
 | `NEXT_PUBLIC_APP_URL` | no       | Public URL (e.g. `https://your-domain`).                           |
@@ -167,9 +178,10 @@ app/
     auth/              # login / logout
     cars/              # list(paginated)/create, [id] CRUD, [id]/status
     makes/             # manufacturer catalog CRUD
-    ai/                # analyze-listing (score+price), generate-copy
+    ai/                # analyze-listing (score+price+suggestedFields), generate-copy, buyer-insights
 components/
-  public/              # CarCard, CarList (infinite scroll), SearchBar, FilterPanel, PromoModal
+  public/              # CarCard, CarList (infinite scroll), SearchBar, FilterPanel, PromoModal,
+                       #   BuyerInsightsPanel, DealIntelligenceCard, InspectionChecklist
   admin/               # CarForm, Kanban{Board,Column,Card}, MakesManager, ListingAnalyzer,
                        #   HealthScoreBadge, LoginForm, LogoutButton, StatusBadge
   ui/                  # Toast
@@ -200,8 +212,10 @@ the code accounts for:
   so `lib/prisma.ts` wires the **libSQL** adapter to the SQLite file. The seed
   runs via **`tsx`** (the generated client is ESM); the seed command lives in
   `prisma.config.ts`.
-- **AI via OpenRouter** — a single `lib/ai.ts` wrapper (`aiChat`) backs both AI
-  features; the model is configurable via `OPENROUTER_MODEL`.
+- **AI via OpenRouter** — a single `lib/ai.ts` wrapper (`aiChat`) backs all three
+  AI features (admin analyzer + ad copy, public buyer insights); the model is
+  configurable via `OPENROUTER_MODEL`. Buyer insights are cached in the DB after
+  first generation so repeat visitors see them instantly.
 - **Number formatting** is manual grouping (not `Intl`) to avoid server/browser
   ICU differences causing hydration mismatches in prices/mileage.
 
