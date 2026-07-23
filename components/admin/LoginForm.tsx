@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 
+const inputClass =
+  "h-12 w-full rounded-xl border border-border bg-background px-4 text-base text-primary shadow-sm outline-none transition-colors placeholder:text-secondary focus:border-accent focus:ring-2 focus:ring-accent/20";
+
 export function LoginForm({ from }: { from?: string }) {
-  const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,8 +23,15 @@ export function LoginForm({ from }: { from?: string }) {
     });
 
     if (res.ok) {
-      router.replace(from && from.startsWith("/admin") ? from : "/admin/dashboard");
-      router.refresh();
+      const target =
+        from && from.startsWith("/admin") && from !== "/admin/login"
+          ? from
+          : "/admin/dashboard";
+      // Hard navigation (not router.replace + refresh). The login response
+      // just set the httpOnly session cookie; a full page load guarantees the
+      // next request carries it, so the proxy admits us immediately. The
+      // soft-nav variant can race the cookie and leave the page stuck.
+      window.location.replace(target);
     } else {
       setLoading(false);
       setError(res.status === 401 ? "Incorrect password." : "Login failed.");
@@ -31,7 +39,7 @@ export function LoginForm({ from }: { from?: string }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-20">
+    <div className="mx-auto flex w-1/2 flex-col items-center px-4 py-16 sm:py-20">
       <div className="mb-8 text-center">
         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-accent text-white shadow-md">
           <Lock className="h-6 w-6" strokeWidth={2.5} />
@@ -46,10 +54,10 @@ export function LoginForm({ from }: { from?: string }) {
 
       <form
         onSubmit={handleSubmit}
-        className="w-full space-y-4 rounded-2xl border border-border bg-surface p-6 shadow-sm"
+        className="w-full space-y-5 rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8"
       >
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-secondary">
+          <span className="mb-2 block text-sm font-semibold text-primary">
             Password
           </span>
           <input
@@ -60,12 +68,15 @@ export function LoginForm({ from }: { from?: string }) {
             autoFocus
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-primary outline-none transition-colors placeholder:text-secondary focus:border-accent focus:ring-2 focus:ring-accent/20"
+            className={inputClass}
           />
         </label>
 
         {error ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+          <p
+            className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+            role="alert"
+          >
             {error}
           </p>
         ) : null}
@@ -73,14 +84,15 @@ export function LoginForm({ from }: { from?: string }) {
         <button
           type="submit"
           disabled={loading || !password}
-          className="w-full cursor-pointer rounded-xl bg-accent px-4 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:opacity-90 hover:-translate-y-px disabled:opacity-50"
+          className="h-12 w-full cursor-pointer rounded-xl bg-accent px-4 text-sm font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:opacity-90 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "Signing in…" : "Sign in"}
         </button>
 
         <p className="text-center text-xs text-secondary">
-          Demo password is set via <code className="text-secondary">ADMIN_PASSWORD</code>{" "}
-          (default: <code className="text-secondary">admin123</code>).
+          Password is set via{" "}
+          <code className="text-secondary">ADMIN_PASSWORD</code> in the server
+          environment.
         </p>
       </form>
     </div>

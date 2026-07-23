@@ -4,7 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/format";
 import type { ListingAnalysis } from "@/lib/types";
 
-const SYSTEM = `You are an automotive market analyst for a used-car marketplace in Indonesia.
+const SYSTEM = `You are an expert automotive market analyst for the Indonesian used-car market. Prices are in Indonesian Rupiah (IDR), where 1 juta = 1,000,000 and 1 miliar = 1,000,000,000. A typical running used car in Indonesia costs between roughly Rp 50,000,000 (50 juta) and Rp 800,000,000 (800 juta); most ordinary used cars are in the Rp 100–400 juta range.
+
+You MUST reason about whether the LISTED PRICE is realistic for this exact car in the Indonesian market, using your knowledge of typical prices by brand, model, segment, age and mileage. Do NOT assume the listed price is correct. If the listed price is implausible — for example off by an order of magnitude (e.g. a running 2020 MPV listed for only a few juta), suspiciously cheap for a running car, or far above market — say so plainly in the pricing note, mark the pricing label as "Underpriced"/"Anomalous" or "Overpriced" accordingly, and base your SUGGESTED price on realistic market value, NOT on the listed price.
+
 You respond ONLY with valid JSON — no preamble, no markdown, no backticks, no explanation.`;
 
 function buildUserPrompt(input: {
@@ -45,19 +48,36 @@ Make: ${input.make}
 Model: ${input.model}
 Year: ${input.year}
 Mileage: ${input.mileage.toLocaleString()} km
-Listed Price: ${formatPrice(input.price)}
+Listed Price: ${formatPrice(input.price)}  (raw: ${input.price.toLocaleString("en-US")} IDR)
 Color: ${input.color || "Not specified"}
 Description: "${input.description || "None provided"}"
 
+Indonesian used-car market reference (typical asking prices, IDR):
+- City hatchbacks / LCGC (e.g. Honda Brio, Toyota Agya): ~Rp 100–220 juta
+- Compact sedans (e.g. Toyota Camry, Honda Civic): ~Rp 200–450 juta
+- MPVs / 7-seaters (e.g. Nissan Serena, Toyota Avanza, Suzuki Ertiga): ~Rp 180–400 juta
+- Compact SUVs (e.g. Daihatsu Terios, Wuling Almaz): ~Rp 180–350 juta
+- Body-on-frame SUVs / 4x4 (e.g. Mitsubishi Pajero Sport): ~Rp 300–500 juta
+- EVs / premium (e.g. Hyundai Ioniq 5): ~Rp 450–800 juta
+Adjust down for higher mileage and older age, up for low mileage / desirable spec.
+
 Scoring guide:
-- healthScore = sum of all four breakdown scores
-- Pricing: compare listed price to market value for this make/model/year/mileage
-- Description: longer + more specific = higher score; empty = 0
-- Completeness: penalise missing color, missing description, no photos mentioned
-- Appeal: consider year × mileage combination and brand reputation
-- suggestedFields: your best recommendation for each field. price = optimal
-  competitive price; adCopy = compelling but honest copy from the provided
-  info; description = the admin's notes cleaned up; model/color = standardized.`;
+- healthScore = sum of all four breakdown scores.
+- Pricing: judge the listed price against realistic Indonesian market value for
+  THIS make/model/year/mileage using the reference above. If the price is off by
+  roughly an order of magnitude or otherwise implausible, score pricing low,
+  label it "Underpriced"/"Anomalous" or "Overpriced", explain in the note, and
+  set the suggested price range to the realistic market value — NOT a small
+  delta around the listed price.
+- priceRange.min / max must reflect realistic market value in IDR (same scale as
+  the listed price). Only narrow around the listed price when the listed price
+  is itself realistic.
+- Description: longer + more specific = higher score; empty = 0.
+- Completeness: penalise missing color, missing description, no photos mentioned.
+- Appeal: consider year × mileage combination and brand reputation.
+- suggestedFields: your best recommendation for each field. price = the realistic
+  competitive asking price in IDR; adCopy = compelling but honest copy from the
+  provided info; description = the admin's notes cleaned up; model/color standardized.`;
 }
 
 // Ask the model (via OpenRouter) for the analysis JSON. Throws on
