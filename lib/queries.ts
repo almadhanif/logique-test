@@ -53,8 +53,18 @@ export function buildPublishedWhere(
 
   return {
     status: "PUBLISHED",
+    // Multi-word search: split into words, each word must match make OR model.
+    // "wuling almaz" → AND[ (make~wuling | model~wuling), (make~almaz | model~almaz) ]
     ...(f.search && {
-      OR: [{ make: { contains: f.search } }, { model: { contains: f.search } }],
+      AND: f.search
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((word) => ({
+          OR: [
+            { make: { contains: word } },
+            { model: { contains: word } },
+          ],
+        })),
     }),
     ...(f.make && { make: f.make }),
     ...(hasYear && {

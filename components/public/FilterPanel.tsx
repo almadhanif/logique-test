@@ -15,23 +15,34 @@ export function FilterPanel({ makes, locale }: { makes: string[]; locale: Locale
   const [isPending, startTransition] = useTransition();
 
   const [make, setMake] = useState(searchParams.get("make") ?? "");
-  const [yearMin, setYearMin] = useState(searchParams.get("yearMin") ?? "");
-  const [yearMax, setYearMax] = useState(searchParams.get("yearMax") ?? "");
+  // Date pickers for year range — value is "YYYY-MM-DD"; we extract the year on commit.
+  const [yearMinDate, setYearMinDate] = useState(
+    searchParams.get("yearMin") ? `${searchParams.get("yearMin")}-01-01` : "",
+  );
+  const [yearMaxDate, setYearMaxDate] = useState(
+    searchParams.get("yearMax") ? `${searchParams.get("yearMax")}-12-31` : "",
+  );
   const [priceMin, setPriceMin] = useState(searchParams.get("priceMin") ?? "");
   const [priceMax, setPriceMax] = useState(searchParams.get("priceMax") ?? "");
   const [mileageMax, setMileageMax] = useState(searchParams.get("mileageMax") ?? "");
 
-  // scroll:false keeps the user in place — only the listings refresh (server-side).
   function apply(updates: Record<string, string>) {
     startTransition(() => {
       router.replace(buildSearchPath("/", searchParams, updates), { scroll: false });
     });
   }
 
+  // Extract years from the date pickers and apply both at once.
+  function applyYearRange() {
+    const minY = yearMinDate ? yearMinDate.substring(0, 4) : "";
+    const maxY = yearMaxDate ? yearMaxDate.substring(0, 4) : "";
+    apply({ yearMin: minY, yearMax: maxY });
+  }
+
   function reset() {
     setMake("");
-    setYearMin("");
-    setYearMax("");
+    setYearMinDate("");
+    setYearMaxDate("");
     setPriceMin("");
     setPriceMax("");
     setMileageMax("");
@@ -53,7 +64,7 @@ export function FilterPanel({ makes, locale }: { makes: string[]; locale: Locale
   }
 
   const hasFilters =
-    make || yearMin || yearMax || priceMin || priceMax || mileageMax;
+    make || yearMinDate || yearMaxDate || priceMin || priceMax || mileageMax;
 
   return (
     <div className="space-y-5 rounded-xl border border-border bg-surface p-5 shadow-sm">
@@ -90,12 +101,27 @@ export function FilterPanel({ makes, locale }: { makes: string[]; locale: Locale
         </select>
       </label>
 
+      {/* Year range — calendar date pickers */}
       <div>
         <span className="label mb-1.5 block text-[10px] text-secondary">{t(locale, "filter.year")}</span>
         <div className="flex items-center gap-2">
-          <NumberInput locale={locale} ariaLabel="Minimum year" value={yearMin} onChange={setYearMin} onCommit={() => apply({ yearMin })} />
+          <input
+            type="date"
+            aria-label="Minimum year"
+            value={yearMinDate}
+            onChange={(e) => setYearMinDate(e.target.value)}
+            onBlur={applyYearRange}
+            className={`${inputClass} cursor-pointer`}
+          />
           <span className="text-secondary">–</span>
-          <NumberInput locale={locale} ariaLabel="Maximum year" value={yearMax} onChange={setYearMax} onCommit={() => apply({ yearMax })} />
+          <input
+            type="date"
+            aria-label="Maximum year"
+            value={yearMaxDate}
+            onChange={(e) => setYearMaxDate(e.target.value)}
+            onBlur={applyYearRange}
+            className={`${inputClass} cursor-pointer`}
+          />
         </div>
       </div>
 
