@@ -7,7 +7,15 @@ import { buildSearchPath } from "@/lib/nav";
 import { t, type Locale } from "@/lib/i18n/dictionaries";
 
 const inputClass =
-  "w-full cursor-text rounded-lg border border-border bg-surface px-4 py-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-secondary focus:border-primary";
+  "w-full cursor-text rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-secondary focus:border-primary";
+
+// Generate year options (newest first).
+const CURRENT_YEAR = new Date().getFullYear() + 1;
+const YEARS = Array.from({ length: CURRENT_YEAR - 1989 }, (_, i) => CURRENT_YEAR - i);
+
+function formatDots(raw: string): string {
+  return raw.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
 
 export function FilterPanel({ makes, locale }: { makes: string[]; locale: Locale }) {
   const router = useRouter();
@@ -15,13 +23,8 @@ export function FilterPanel({ makes, locale }: { makes: string[]; locale: Locale
   const [isPending, startTransition] = useTransition();
 
   const [make, setMake] = useState(searchParams.get("make") ?? "");
-  // Date pickers for year range — value is "YYYY-MM-DD"; we extract the year on commit.
-  const [yearMinDate, setYearMinDate] = useState(
-    searchParams.get("yearMin") ? `${searchParams.get("yearMin")}-01-01` : "",
-  );
-  const [yearMaxDate, setYearMaxDate] = useState(
-    searchParams.get("yearMax") ? `${searchParams.get("yearMax")}-12-31` : "",
-  );
+  const [yearMin, setYearMin] = useState(searchParams.get("yearMin") ?? "");
+  const [yearMax, setYearMax] = useState(searchParams.get("yearMax") ?? "");
   const [priceMin, setPriceMin] = useState(searchParams.get("priceMin") ?? "");
   const [priceMax, setPriceMax] = useState(searchParams.get("priceMax") ?? "");
   const [mileageMax, setMileageMax] = useState(searchParams.get("mileageMax") ?? "");
@@ -32,17 +35,10 @@ export function FilterPanel({ makes, locale }: { makes: string[]; locale: Locale
     });
   }
 
-  // Extract years from the date pickers and apply both at once.
-  function applyYearRange() {
-    const minY = yearMinDate ? yearMinDate.substring(0, 4) : "";
-    const maxY = yearMaxDate ? yearMaxDate.substring(0, 4) : "";
-    apply({ yearMin: minY, yearMax: maxY });
-  }
-
   function reset() {
     setMake("");
-    setYearMinDate("");
-    setYearMaxDate("");
+    setYearMin("");
+    setYearMax("");
     setPriceMin("");
     setPriceMax("");
     setMileageMax("");
@@ -63,13 +59,12 @@ export function FilterPanel({ makes, locale }: { makes: string[]; locale: Locale
     );
   }
 
-  const hasFilters =
-    make || yearMinDate || yearMaxDate || priceMin || priceMax || mileageMax;
+  const hasFilters = make || yearMin || yearMax || priceMin || priceMax || mileageMax;
 
   return (
-    <div className="space-y-5 rounded-xl border border-border bg-surface p-5 shadow-sm">
+    <div className="space-y-6 rounded-xl border border-border bg-surface p-6 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="label text-xs text-primary">{t(locale, "filter.title")}</h2>
+        <h2 className="label text-sm text-primary">{t(locale, "filter.title")}</h2>
         {hasFilters ? (
           <button
             type="button"
@@ -82,8 +77,9 @@ export function FilterPanel({ makes, locale }: { makes: string[]; locale: Locale
         ) : null}
       </div>
 
-      <label className="block">
-        <span className="label mb-1.5 block text-[10px] text-secondary">{t(locale, "filter.make")}</span>
+      {/* Make */}
+      <div>
+        <span className="label mb-2 block text-[10px] text-secondary">{t(locale, "filter.make")}</span>
         <select
           value={make}
           onChange={(e) => {
@@ -94,50 +90,72 @@ export function FilterPanel({ makes, locale }: { makes: string[]; locale: Locale
         >
           <option value="">{t(locale, "filter.allMakes")}</option>
           {makes.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
+            <option key={m} value={m}>{m}</option>
           ))}
         </select>
-      </label>
-
-      {/* Year range — calendar date pickers */}
-      <div>
-        <span className="label mb-1.5 block text-[10px] text-secondary">{t(locale, "filter.year")}</span>
-        <div className="flex items-center gap-2">
-          <input
-            type="date"
-            aria-label="Minimum year"
-            value={yearMinDate}
-            onChange={(e) => setYearMinDate(e.target.value)}
-            onBlur={applyYearRange}
-            className={`${inputClass} cursor-pointer`}
-          />
-          <span className="text-secondary">–</span>
-          <input
-            type="date"
-            aria-label="Maximum year"
-            value={yearMaxDate}
-            onChange={(e) => setYearMaxDate(e.target.value)}
-            onBlur={applyYearRange}
-            className={`${inputClass} cursor-pointer`}
-          />
-        </div>
       </div>
 
-      <div>
-        <span className="label mb-1.5 block text-[10px] text-secondary">{t(locale, "filter.price")}</span>
-        <div className="flex items-center gap-2">
-          <NumberInput locale={locale} ariaLabel="Minimum price" value={priceMin} onChange={setPriceMin} onCommit={() => apply({ priceMin })} />
-          <span className="text-secondary">–</span>
-          <NumberInput locale={locale} ariaLabel="Maximum price" value={priceMax} onChange={setPriceMax} onCommit={() => apply({ priceMax })} />
-        </div>
+      {/* Year range — clean selects */}
+      <div className="space-y-2">
+        <span className="label block text-[10px] text-secondary">{t(locale, "filter.year")}</span>
+        <select
+          value={yearMin}
+          onChange={(e) => {
+            setYearMin(e.target.value);
+            apply({ yearMin: e.target.value });
+          }}
+          aria-label="From year"
+          className={`${inputClass} cursor-pointer`}
+        >
+          <option value="">{locale === "id" ? "Dari tahun" : "From year"}</option>
+          {YEARS.map((y) => (
+            <option key={y} value={String(y)}>{y}</option>
+          ))}
+        </select>
+        <select
+          value={yearMax}
+          onChange={(e) => {
+            setYearMax(e.target.value);
+            apply({ yearMax: e.target.value });
+          }}
+          aria-label="To year"
+          className={`${inputClass} cursor-pointer`}
+        >
+          <option value="">{locale === "id" ? "Sampai tahun" : "To year"}</option>
+          {YEARS.map((y) => (
+            <option key={y} value={String(y)}>{y}</option>
+          ))}
+        </select>
       </div>
 
-      <label className="block">
-        <span className="label mb-1.5 block text-[10px] text-secondary">{t(locale, "filter.maxMileage")}</span>
-        <NumberInput locale={locale} ariaLabel="Maximum mileage" placeholder="e.g. 100000" value={mileageMax} onChange={setMileageMax} onCommit={() => apply({ mileageMax })} />
-      </label>
+      {/* Price range — formatted Rupiah */}
+      <div className="space-y-2">
+        <span className="label block text-[10px] text-secondary">{t(locale, "filter.price")}</span>
+        <FormattedInput
+          value={priceMin}
+          onChange={setPriceMin}
+          onCommit={() => apply({ priceMin })}
+          placeholder={locale === "id" ? "Harga minimum" : "Min price"}
+        />
+        <FormattedInput
+          value={priceMax}
+          onChange={setPriceMax}
+          onCommit={() => apply({ priceMax })}
+          placeholder={locale === "id" ? "Harga maksimum" : "Max price"}
+        />
+      </div>
+
+      {/* Max mileage — formatted */}
+      <div>
+        <span className="label mb-2 block text-[10px] text-secondary">{t(locale, "filter.maxMileage")}</span>
+        <FormattedInput
+          value={mileageMax}
+          onChange={setMileageMax}
+          onCommit={() => apply({ mileageMax })}
+          placeholder="100.000"
+          suffix="km"
+        />
+      </div>
 
       {isPending ? (
         <p className="text-xs text-secondary" aria-live="polite">{t(locale, "filter.updating")}</p>
@@ -146,38 +164,56 @@ export function FilterPanel({ makes, locale }: { makes: string[]; locale: Locale
   );
 }
 
-function NumberInput({
+/**
+ * Input that formats its numeric value with Indonesian thousand separators
+ * (dots) and shows an "Rp" prefix (for price) or a suffix (for km).
+ * Stores the raw un-formatted number string in parent state.
+ */
+function FormattedInput({
   value,
   onChange,
   onCommit,
   placeholder,
-  ariaLabel,
-  locale,
+  suffix,
 }: {
   value: string;
   onChange: (v: string) => void;
   onCommit: () => void;
   placeholder?: string;
-  ariaLabel: string;
-  locale: Locale;
+  suffix?: string;
 }) {
+  const display = value ? formatDots(value) : "";
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value.replace(/\D/g, "");
+    onChange(raw);
+  }
+
   return (
-    <input
-      type="number"
-      inputMode="numeric"
-      min={0}
-      aria-label={ariaLabel}
-      placeholder={placeholder ?? (ariaLabel.includes("Min") ? t(locale, "filter.min") : t(locale, "filter.max"))}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onBlur={onCommit}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          onCommit();
-        }
-      }}
-      className={inputClass}
-    />
+    <div className="relative">
+      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-secondary">
+        {suffix ? "" : "Rp"}
+      </span>
+      <input
+        type="text"
+        inputMode="numeric"
+        value={display}
+        onChange={handleChange}
+        onBlur={onCommit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onCommit();
+          }
+        }}
+        placeholder={placeholder}
+        className={`${inputClass} ${suffix ? "pr-10" : "pl-10"}`}
+      />
+      {suffix ? (
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-secondary">
+          {suffix}
+        </span>
+      ) : null}
+    </div>
   );
 }

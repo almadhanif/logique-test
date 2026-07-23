@@ -65,7 +65,7 @@ export default async function BrowsePage({
           </Suspense>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[300px_1fr]">
           <aside className="lg:sticky lg:top-20 lg:self-start">
             <Suspense fallback={<div className="h-72 rounded-xl bg-muted" />}>
               <FilterPanel makes={makes} locale={locale} />
