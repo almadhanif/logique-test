@@ -30,7 +30,14 @@ function buildUserPrompt(input: {
     "completeness": { "score": <0-25>, "label": "<Complete|Partial|Incomplete>",        "note": "<1 sentence>" },
     "appeal":       { "score": <0-25>, "label": "<Strong|Average|Weak>",               "note": "<1 sentence>" }
   },
-  "suggestions": ["<actionable improvement 1>", "<actionable improvement 2>", "<actionable improvement 3>"]
+  "suggestions": ["<actionable improvement 1>", "<actionable improvement 2>", "<actionable improvement 3>"],
+  "suggestedFields": {
+    "price": <number, the optimal competitive listing price in IDR>,
+    "model": "<model name, properly capitalized and formatted>",
+    "color": "<standardized color name>",
+    "adCopy": "<polished buyer-facing ad copy, 3-4 sentences, enthusiastic but honest, do NOT invent details not provided>",
+    "description": "<the admin's notes cleaned up and made more readable>"
+  }
 }
 
 Car listing details:
@@ -47,7 +54,10 @@ Scoring guide:
 - Pricing: compare listed price to market value for this make/model/year/mileage
 - Description: longer + more specific = higher score; empty = 0
 - Completeness: penalise missing color, missing description, no photos mentioned
-- Appeal: consider year × mileage combination and brand reputation`;
+- Appeal: consider year × mileage combination and brand reputation
+- suggestedFields: your best recommendation for each field. price = optimal
+  competitive price; adCopy = compelling but honest copy from the provided
+  info; description = the admin's notes cleaned up; model/color = standardized.`;
 }
 
 // Ask the model (via OpenRouter) for the analysis JSON. Throws on
@@ -222,6 +232,20 @@ function normalizeAnalysis(parsed: unknown): ListingAnalysis {
     ? obj.suggestions.filter((s): s is string => typeof s === "string").slice(0, 5)
     : [];
 
+  // Extract AI-suggested field values (defensively — the model might omit them).
+  const sfSrc = (obj.suggestedFields && typeof obj.suggestedFields === "object"
+    ? obj.suggestedFields
+    : {}) as Record<string, unknown>;
+  const suggestedFields: import("@/lib/types").SuggestedFields = {};
+  if (sfSrc.price !== undefined) {
+    const p = typeof sfSrc.price === "number" ? sfSrc.price : Number(sfSrc.price);
+    if (Number.isFinite(p) && p > 0) suggestedFields.price = p;
+  }
+  if (typeof sfSrc.model === "string" && sfSrc.model.trim()) suggestedFields.model = sfSrc.model.trim();
+  if (typeof sfSrc.color === "string" && sfSrc.color.trim()) suggestedFields.color = sfSrc.color.trim();
+  if (typeof sfSrc.adCopy === "string" && sfSrc.adCopy.trim()) suggestedFields.adCopy = sfSrc.adCopy.trim();
+  if (typeof sfSrc.description === "string" && sfSrc.description.trim()) suggestedFields.description = sfSrc.description.trim();
+
   return {
     healthScore: clamp(obj.healthScore ?? sum, 0, 100, sum),
     priceRange: {
@@ -231,5 +255,6 @@ function normalizeAnalysis(parsed: unknown): ListingAnalysis {
     },
     breakdown,
     suggestions,
+    suggestedFields,
   };
 }

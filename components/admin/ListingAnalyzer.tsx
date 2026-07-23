@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Lightbulb, Sparkles } from "lucide-react";
+import { Lightbulb, Sparkles, Wand2 } from "lucide-react";
 import type {
   AICopyFormValues,
   AnalysisBreakdown,
   ExistingAnalysis,
   ListingAnalysis,
+  SuggestedFields,
 } from "@/lib/types";
 import { formatPrice } from "@/lib/format";
+import { useToast } from "@/components/ui/Toast";
 
 // Unified view the UI renders — either freshly analyzed (full, with breakdown)
 // or restored from the DB (score + price + suggestions only).
@@ -20,6 +22,7 @@ type AnalysisView = {
   breakdown?: AnalysisBreakdown;
   suggestions: string[];
   lastAnalyzedAt?: string;
+  suggestedFields?: SuggestedFields;
 };
 
 function fromStored(stored: ExistingAnalysis): AnalysisView {
@@ -41,6 +44,7 @@ function fromFresh(fresh: ListingAnalysis): AnalysisView {
     breakdown: fresh.breakdown,
     suggestions: fresh.suggestions,
     lastAnalyzedAt: new Date().toISOString(),
+    suggestedFields: fresh.suggestedFields,
   };
 }
 
@@ -69,10 +73,12 @@ export function ListingAnalyzer({
   carId,
   formData,
   existingAnalysis,
+  onApply,
 }: {
   carId?: string;
   formData: AICopyFormValues;
   existingAnalysis?: ExistingAnalysis;
+  onApply?: (fields: SuggestedFields) => void;
 }) {
   const [view, setView] = useState<AnalysisView | null>(
     existingAnalysis ? fromStored(existingAnalysis) : null,
@@ -163,7 +169,7 @@ export function ListingAnalyzer({
 
       {loading ? <Skeleton /> : null}
 
-      {!loading && view ? <Results view={view} onReanalyze={analyze} /> : null}
+      {!loading && view ? <Results view={view} onReanalyze={analyze} onApply={onApply} /> : null}
     </div>
   );
 }
@@ -171,11 +177,23 @@ export function ListingAnalyzer({
 function Results({
   view,
   onReanalyze,
+  onApply,
 }: {
   view: AnalysisView;
   onReanalyze: () => void;
+  onApply?: (fields: SuggestedFields) => void;
 }) {
+  const toast = useToast();
   const color = scoreColor(view.healthScore);
+
+  const sf = view.suggestedFields;
+  const hasSuggestions = sf && Object.values(sf).some((v) => v !== undefined);
+
+  function apply() {
+    if (!sf || !onApply) return;
+    onApply(sf);
+    toast("AI suggestions applied to form");
+  }
 
   return (
     <div className="mt-4 space-y-4">
@@ -258,6 +276,18 @@ function Results({
             ))}
           </ul>
         </div>
+      ) : null}
+
+      {/* Apply AI suggestions to form fields */}
+      {hasSuggestions && onApply ? (
+        <button
+          type="button"
+          onClick={apply}
+          className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-xs font-bold uppercase tracking-wider text-on-primary shadow-sm transition-all hover:bg-accent hover:-translate-y-px"
+        >
+          <Wand2 className="h-4 w-4" strokeWidth={2.5} />
+          Apply AI suggestions to form
+        </button>
       ) : null}
 
       <div className="flex items-center justify-between">

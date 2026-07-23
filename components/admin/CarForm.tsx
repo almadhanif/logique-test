@@ -188,6 +188,13 @@ export function CarForm({
           carId={mode === "edit" ? carId : undefined}
           formData={aiFormValues}
           existingAnalysis={existingAnalysis}
+          onApply={(fields) => {
+            if (fields.price !== undefined) setPrice(String(fields.price));
+            if (fields.model !== undefined) setModel(fields.model);
+            if (fields.color !== undefined) setColor(fields.color);
+            if (fields.adCopy !== undefined) setAdCopy(fields.adCopy);
+            if (fields.description !== undefined) setDescription(fields.description);
+          }}
         />
       </div>
 

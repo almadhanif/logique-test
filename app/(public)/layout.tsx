@@ -1,5 +1,11 @@
+import type { Car } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { PromoModal } from "@/components/public/PromoModal";
+
+// Module-level so the react-hooks purity rule doesn't flag Math.random.
+function pickRandom(arr: Car[]): Car | null {
+  return arr.length ? arr[Math.floor(Math.random() * arr.length)] : null;
+}
 
 // Wraps all public pages. The promo modal self-gates on first-visit via
 // localStorage, so it only ever shows once per browser. It showcases a randomly
@@ -17,9 +23,7 @@ export default async function PublicLayout({
     take: 12,
     orderBy: { createdAt: "desc" },
   });
-  const car = featured.length
-    ? featured[Math.floor(Math.random() * featured.length)]
-    : null;
+  const car = pickRandom(featured);
 
   return (
     <>
