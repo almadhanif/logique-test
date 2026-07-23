@@ -55,7 +55,18 @@ async function SiteFooter() {
   return (
     <footer className="border-t border-border bg-primary text-on-primary">
       <div className="app-container flex flex-col items-start justify-between gap-2 py-8 text-xs sm:flex-row sm:items-center">
-        <p className="label opacity-80">© {new Date().getFullYear()} AutoListing</p>
+        <div className="flex items-center gap-3">
+          <p className="label opacity-80">© {new Date().getFullYear()} AutoListing</p>
+          <span className="opacity-30">·</span>
+          <a
+            href="https://github.com/almadhanif/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="label text-accent transition-opacity hover:opacity-80"
+          >
+            almadhanif
+          </a>
+        </div>
         <p className="label text-accent">{t(locale, "footer.tagline")}</p>
       </div>
     </footer>
