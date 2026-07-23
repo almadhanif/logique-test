@@ -50,7 +50,9 @@ export function KanbanBoard({ initialCars }: { initialCars: Car[] }) {
     return groups;
   }, [filteredCars]);
 
-  const activeCar = activeId ? cars.find((c) => c.id === activeId) ?? null : null;
+  const activeCar = activeId
+    ? (cars.find((c) => c.id === activeId) ?? null)
+    : null;
 
   function handleDragStart(event: DragStartEvent) {
     setActiveId(event.active.id as string);
@@ -64,7 +66,8 @@ export function KanbanBoard({ initialCars }: { initialCars: Car[] }) {
 
     const carId = active.id as string;
     const newStatus = over.id as Status;
-    const currentStatus = (active.data.current?.status ?? null) as Status | null;
+    const currentStatus = (active.data.current?.status ??
+      null) as Status | null;
     const car = cars.find((c) => c.id === carId);
     if (!car || !currentStatus) return;
 
@@ -94,12 +97,13 @@ export function KanbanBoard({ initialCars }: { initialCars: Car[] }) {
     if (!res.ok) {
       // Revert optimistic update.
       setCars((prev) =>
-        prev.map((c) =>
-          c.id === carId ? { ...c, status: currentStatus } : c,
-        ),
+        prev.map((c) => (c.id === carId ? { ...c, status: currentStatus } : c)),
       );
       const data = await res.json().catch(() => ({}));
-      toast(data.error ?? "Failed to update status. Please try again.", "error");
+      toast(
+        data.error ?? "Failed to update status. Please try again.",
+        "error",
+      );
     } else {
       toast(`Moved to ${newStatus.toLowerCase()}`, "success");
       // Keep server data in sync (e.g. updated timestamps) without a flash.
@@ -149,7 +153,7 @@ export function KanbanBoard({ initialCars }: { initialCars: Car[] }) {
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search make, model, or year…"
+          placeholder="Search names…"
           className="h-11 w-full cursor-text rounded-lg border border-border bg-surface py-2.5 pl-10 pr-10 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-secondary focus:border-primary"
         />
         {search ? (
