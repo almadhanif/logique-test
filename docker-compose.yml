@@ -1,10 +1,8 @@
-# Logique Motors — production stack with HTTPS (Caddy terminates TLS).
+# Logique Motors — the used-car app only.
 #
-# Quick start:
-#   cp .env.example .env        # then fill in OPENROUTER_API_KEY + ADMIN_PASSWORD
-#   docker compose up -d --build
-#
-#   → https://<your-domain>     (Caddy auto-provisions a Let's Encrypt cert)
+# HTTPS / reverse-proxy is handled by the shared `solvara-proxy` project (the
+# single service that binds 80/443). This stack just runs the app and attaches
+# it to the external `web` network so the proxy can reach it as `logique-motors`.
 #
 # Secrets (OPENROUTER_API_KEY, ADMIN_PASSWORD) are read from the `.env` file
 # that docker compose auto-loads; DATABASE_URL is fixed to the persisted volume.
@@ -29,22 +27,12 @@ services:
       - db-data:/app/data
     expose:
       - "3000"
+    networks:
+      - web
 
-  caddy:
-    image: caddy:2-alpine
-    container_name: logique-caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data
-      - caddy-config:/config
-    depends_on:
-      - app
+networks:
+  web:
+    external: true
 
 volumes:
   db-data:
-  caddy-data:
-  caddy-config:
